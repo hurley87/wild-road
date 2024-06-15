@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter as FontSans } from 'next/font/google';
-
+import { Analytics } from '@/components/analytics';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import Privy from '@/components/privy';
@@ -28,6 +28,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        <Analytics />
         <Privy>{children}</Privy>
       </body>
     </html>
