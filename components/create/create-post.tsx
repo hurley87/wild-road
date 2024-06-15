@@ -7,7 +7,6 @@ import { useRef, useState } from 'react';
 import { useStorageUpload } from '@thirdweb-dev/react';
 import useWalletClient from '@/hooks/useWalletClient';
 import { useRouter } from 'next/navigation';
-// import { createToken } from '@/lib/api';
 import { chain } from '@/constants/chain';
 import { formatImage } from '@/lib/formatting';
 import { Button } from '../ui/button';
@@ -15,7 +14,7 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 function CreatePost() {
-  const { login, user } = usePrivy();
+  const { user } = usePrivy();
   const contractAdmin = user?.wallet?.address as `0x${string}`;
   const inputFile = useRef<HTMLInputElement>(null);
   const { mutateAsync: upload } = useStorageUpload();
@@ -133,7 +132,7 @@ function CreatePost() {
       console.log('uid', uid);
       console.log('collection', collection);
 
-      const res = await create({
+      const collectionId = await create({
         uid,
         collection,
         contractAdmin,
@@ -142,31 +141,12 @@ function CreatePost() {
         description,
       });
 
-      console.log('res', res);
+      console.log('collectionId', collectionId);
+
+      router.push(`/editor/${collectionId}`);
     } catch {
       setUploading(false);
     }
-
-    // const hash = await client.writeContract(simulateRequest as any);
-
-    // //
-    // const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    // const contractAddress = receipt.logs[0].address;
-
-    // save token to database
-    // const token = {
-    //   id: contractAddress,
-    //   name,
-    //   description,
-    //   image: imageURI,
-    //   hash: receipt.transactionHash,
-    //   userAddress: account,
-    //   email,
-    // };
-
-    // await createToken({ token });
-    // // redirect to the share token page
-    // router.push(`/share/${contractAddress}`);
   }
 
   async function handleCreateContract() {
