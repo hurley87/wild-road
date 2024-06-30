@@ -11,6 +11,7 @@ type WalletClientType = {
 };
 
 const useWalletClient = async ({ chain, wallet }: WalletClientType) => {
+  if (!wallet) return null;
   // Switch your wallet to your target chain before getting the viem WalletClient
   await wallet?.switchChain(chain.id);
   // Get an EIP1193 provider from the user's wallet

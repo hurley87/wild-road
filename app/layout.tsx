@@ -7,6 +7,7 @@ import Privy from '@/components/privy';
 import Header from '@/components/header';
 import PrivyReady from '@/components/privy-ready';
 import ConvexClientProvider from './ConvexClientProvider';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Wild Road',
@@ -27,21 +28,20 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased',
+          'min-h-screen bg-background font-serif antialiased',
           fontSans.variable
         )}
       >
         <Analytics />
         <Privy>
           <ConvexClientProvider>
-            <div className="min-h-screen w-screen overflow-hidden flex-col flex">
-              <Header />
-              <div className="mx-auto w-[430px] flex flex-col flex-1 pt-28 px-3">
-                <PrivyReady>{children}</PrivyReady>
-              </div>
+            <Header />
+            <div className="flex flex-col flex-1 p-6">
+              <PrivyReady>{children}</PrivyReady>
             </div>
           </ConvexClientProvider>
         </Privy>
+        <Toaster />
       </body>
     </html>
   );

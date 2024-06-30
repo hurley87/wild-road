@@ -1,220 +1,328 @@
 'use client';
-
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createPublicClient, http, type WalletClient } from 'viem';
-import { createCreatorClient } from '@zoralabs/protocol-sdk';
-import { useRef, useState } from 'react';
-import { useStorageUpload } from '@thirdweb-dev/react';
+import { createPublicClient, http } from 'viem';
+import {
+  createCreatorClient,
+  generateTextNftMetadataFiles,
+} from '@zoralabs/protocol-sdk';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useWalletClient from '@/hooks/useWalletClient';
 import { useRouter } from 'next/navigation';
 import { chain } from '@/constants/chain';
-import { formatImage } from '@/lib/formatting';
 import { Button } from '../ui/button';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { WebIrys } from '@irys/sdk';
+import EditorJS from '@editorjs/editorjs';
+import { Icons } from '../icons';
+import TextareaAutosize from 'react-textarea-autosize';
+import '@/styles/editor.css';
+import { toast } from '../ui/use-toast';
 
 function CreatePost() {
-  const { user } = usePrivy();
+  const ref = useRef<EditorJS>();
+  const { user, sendTransaction } = usePrivy();
+  const farcaster = user?.farcaster;
   const contractAdmin = user?.wallet?.address as `0x${string}`;
-  const inputFile = useRef<HTMLInputElement>(null);
-  const { mutateAsync: upload } = useStorageUpload();
-  const [uploading, setUploading] = useState(false);
-  const [imageURI, setImageURI] = useState('');
-  const [file, setFile] = useState<any>();
   const { wallets } = useWallets();
   const publicClient = createPublicClient({
     chain,
     transport: http(),
   });
   const [contractName, setContractNmae] = useState('');
-  const [description, setDescription] = useState('');
-  const wallet = wallets[0];
-  const router = useRouter();
+  const wallet = wallets.find((wallet) => wallet.address === contractAdmin);
   const walletClient = useWalletClient({ chain, wallet });
-  const [imageSaved, setImageSaved] = useState(false);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const create = useMutation(api.collections.create);
+  const createCollection = useMutation(api.collections.create);
+  const createToken = useMutation(api.tokens.create);
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  async function createContract({
-    contractName,
-    walletClient,
-  }: {
-    contractName: string;
-    walletClient: WalletClient;
-  }) {
-    setUploading(true);
+  const initializeEditor = useCallback(async () => {
+    const EditorJS = (await import('@editorjs/editorjs')).default;
+    // const List = (await import('@editorjs/list')).default;
 
-    if (!contractName) {
-      //   toast.error('Please enter a name');
-      setUploading(false);
-      return;
-    }
-
-    if (!description) {
-      //   toast.error('Please enter a description');
-      setUploading(false);
-      return;
-    }
-
-    if (!walletClient) {
-      //   toast.error('Please connect your wallet');
-      setUploading(false);
-      return;
-    }
-
-    // upload metadata to ipfs
-    const data = [
-      {
-        name: contractName,
-        description,
-        image: imageURI,
-        content: {
-          mime: file.type,
-          uri: imageURI,
+    if (!ref.current) {
+      const editor = new EditorJS({
+        holder: 'editor',
+        onReady() {
+          ref.current = editor;
         },
-      },
-    ];
-    const uris = await upload({ data });
-    const uri = uris[0];
+        placeholder: 'Type here to write your post...',
+        inlineToolbar: false,
+        data: {
+          time: new Date().getTime(),
+          blocks: [],
+          version: '2.22.2',
+        },
+        tools: {
+          // list: List,
+        },
+      });
+    }
+  }, []);
 
-    console.log('uri', uri);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMounted(true);
+    }
+  }, []);
 
-    // create contract
+  useEffect(() => {
+    if (isMounted) {
+      initializeEditor();
+
+      return () => {
+        ref.current?.destroy();
+        ref.current = undefined;
+      };
+    }
+  }, [isMounted, initializeEditor]);
+
+  async function getWebIrys() {
+    const network = 'devnet';
+    const token = 'ethereum';
+
+    const provider = await wallet?.getEthersProvider();
+    if (!provider) throw new Error(`Cannot find privy wallet`);
+
+    const irysWallet =
+      wallet?.walletClientType === 'privy'
+        ? { name: 'privy-embedded', provider, sendTransaction }
+        : { name: 'privy', provider };
+
+    const webIrys = new WebIrys({
+      network,
+      token,
+      wallet: irysWallet,
+    });
+
+    await webIrys.ready();
+    return webIrys; // Return the webIrys instance
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsSaving(true);
+
+    if (!farcaster) {
+      toast({
+        title: 'Please logout and login with Farcaster.',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    const outputData = await ref.current?.save();
+    const blocks = outputData?.blocks;
+
+    if (contractName.length < 1) {
+      toast({
+        title: 'Please add a title',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    if (!blocks || blocks?.length === 0) {
+      toast({
+        title: 'Please write some content',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+      return;
+    }
+
     const chainId = chain.id;
     const creatorClient = createCreatorClient({ chainId, publicClient });
+    const { thumbnailFile } = await generateTextNftMetadataFiles(contractName);
 
-    const tokenData = {
-      // collection info of collection to create.  The combination of these fields will determine the
-      // deterministic collection address.
-      contract: {
-        // the account that will be the admin of the collection.  Must match the signer of the premint.
-        contractAdmin,
-        contractName,
-        contractURI: uri,
-      },
-      // token info of token to create
-      token: {
-        tokenURI: uri,
-        // address to get create referral reward
-        createReferral: '0x1D266998DA65E25DE8e1770d48e0E55DDEE39D24',
-        // the earliest time the premint can be brought onchain.  0 for immediate.
-        mintStart: BigInt(0),
-        // the duration of the mint.  0 for infinite.
-        mintDuration: BigInt(0),
-        // address to receive creator rewards for free mints, or if its a paid mint, the paid mint sale proceeds.
-        payoutRecipient: contractAdmin,
-        // collection: '0x158d20e905e3c4dd465dd0020df604ae9eb40340',
-      },
-    };
+    const webIrys = await getWebIrys(); // Get the webIrys instance
 
     try {
-      const {
-        // the premint that was created
-        premintConfig,
-        // collection address of the premint
-        collectionAddress,
-        // used to sign and submit the premint to the Zora Premint API
-        signAndSubmit,
-      } = await creatorClient.createPremint(tokenData);
+      const receipt = await webIrys.uploadFile(thumbnailFile);
+      const uri = `https://gateway.irys.xyz/mutable/${receipt.id}`;
+      console.log('Minting NFT with URI:', uri);
+
+      const contractMetadata = {
+        name: contractName,
+        image: uri,
+      };
+
+      const contractMetadataReceipt = await webIrys.upload(
+        JSON.stringify(contractMetadata)
+      );
+      const contractURI = `https://gateway.irys.xyz/mutable/${contractMetadataReceipt.id}`;
+      console.log('Minting NFT with Metadata URI:', contractURI);
+
+      const client = await walletClient;
+      if (!client) {
+        toast({
+          title: 'Connect your wallet',
+          variant: 'destructive',
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      const contract = {
+        contractAdmin,
+        contractName,
+        contractURI,
+      };
+
+      const tokenText = contractName;
+      const name =
+        tokenText.length > 10 ? tokenText.slice(0, 10) + '...' : tokenText;
+
+      const { thumbnailFile: tokenImage } =
+        await generateTextNftMetadataFiles(tokenText);
+
+      const tokenReceipt = await webIrys.uploadFile(tokenImage);
+      const tokenURI = `https://gateway.irys.xyz/mutable/${tokenReceipt.id}`;
+      console.log('Minting NFT with URI:', tokenURI);
+
+      const tokenMetadata = {
+        name,
+        description: tokenText,
+        image: tokenURI,
+      };
+
+      const tokenMetadataReceipt = await webIrys.upload(
+        JSON.stringify(tokenMetadata)
+      );
+      const metadataURI = `https://gateway.irys.xyz/mutable/${tokenMetadataReceipt.id}`;
+      console.log('Minting NFT with Metadata URI:', metadataURI);
+
+      const { collectionAddress, premintConfig, signAndSubmit } =
+        await creatorClient.createPremint({
+          contract,
+          token: {
+            tokenURI: metadataURI,
+            createReferral: '0x1D266998DA65E25DE8e1770d48e0E55DDEE39D24',
+            mintStart: BigInt(0),
+            mintDuration: BigInt(0),
+            pricePerToken: BigInt(0),
+            payoutRecipient: contractAdmin,
+          },
+        });
+
       await signAndSubmit({
-        // account to sign the premint
         account: contractAdmin,
-        // the walletClient will be used to sign the message.
-        walletClient,
-        // if true, the signature will be checked before being submitted.
-        // this includes validating that the signer is authorized to create the premint.
+        walletClient: client,
         checkSignature: true,
       });
 
-      const uid = premintConfig.uid;
-      const collection = collectionAddress;
+      const uid = premintConfig?.uid;
 
-      console.log('uid', uid);
-      console.log('collection', collection);
-
-      const collectionId = await create({
-        uid,
-        collection,
+      await createCollection({
+        collectionAddress,
         contractAdmin,
-        uri,
         contractName,
-        description,
+        username: farcaster?.username || 'anon',
+        pfp:
+          farcaster?.pfp ||
+          'https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/cdd23a72-ca58-49c3-9054-7f0ce3d42e00/original',
       });
 
-      console.log('collectionId', collectionId);
+      await createToken({
+        uid,
+        block: null,
+        tokenURI,
+        metadataURI,
+        collectionAddress,
+        contractAdmin,
+      });
 
-      router.push(`/editor/${collectionId}`);
-    } catch {
-      setUploading(false);
+      for (const token of blocks) {
+        const tokenText = token?.data?.text;
+        const name =
+          tokenText.length > 10 ? tokenText.slice(0, 10) + '...' : tokenText;
+
+        const { thumbnailFile: tokenImage } =
+          await generateTextNftMetadataFiles(tokenText);
+
+        const tokenReceipt = await webIrys.uploadFile(tokenImage);
+        const tokenURI = `https://gateway.irys.xyz/mutable/${tokenReceipt.id}`;
+        console.log('Minting NFT with URI:', tokenURI);
+
+        const tokenMetadata = {
+          name,
+          description: tokenText,
+          image: tokenURI,
+        };
+
+        const tokenMetadataReceipt = await webIrys.upload(
+          JSON.stringify(tokenMetadata)
+        );
+        const metadataURI = `https://gateway.irys.xyz/mutable/${tokenMetadataReceipt.id}`;
+        console.log('Minting NFT with Metadata URI:', metadataURI);
+
+        const { collectionAddress, premintConfig, signAndSubmit } =
+          await creatorClient.createPremint({
+            contract,
+            token: {
+              tokenURI: metadataURI,
+              createReferral: '0x1D266998DA65E25DE8e1770d48e0E55DDEE39D24',
+              mintStart: BigInt(0),
+              mintDuration: BigInt(0),
+              pricePerToken: BigInt(0),
+              payoutRecipient: contractAdmin,
+            },
+          });
+
+        await signAndSubmit({
+          account: contractAdmin,
+          walletClient: client,
+          checkSignature: true,
+        });
+
+        const uid = premintConfig?.uid;
+
+        await createToken({
+          uid,
+          block: token,
+          tokenURI,
+          metadataURI,
+          collectionAddress,
+          contractAdmin,
+        });
+      }
+
+      router.push(`/collect/${collectionAddress}`);
+    } catch (e) {
+      console.log('Error uploading file ', e);
     }
-  }
-
-  async function handleCreateContract() {
-    const client = await walletClient;
-    createContract({ contractName, walletClient: client });
-  }
-
-  const handleChange = async (e: any) => {
-    setImageSaved(false);
-    const file = e.target.files[0];
-    // upload image to ipfs
-    setFile(file);
-    const img_uris = await upload({ data: [file] });
-    setImageURI(img_uris[0]);
-    setImageSaved(true);
   };
 
   return (
-    <div className="py-6">
-      <div className="flex flex-col items-center justify-center rounded-lg bg-light px-2 text-center w-full">
-        <button
-          disabled={uploading}
-          onClick={() => inputFile.current && inputFile?.current?.click()}
-          style={{
-            backgroundImage: `url(${formatImage(imageURI)})`,
-            backgroundSize: 'cover',
-          }}
-          className="bg-button p-3 rounded-2xl w-full h-[400px] hover:bg-button-hover trasnition-all duration-300 ease-in-out"
-        >
-          <div className="flex flex-col justify-center items-center h-60">
-            {!imageSaved && (
-              <div className="flex flex-col gap-6">
-                <p className="text-xs font-lightmt-6">
-                  {file ? `Uploading image ...` : 'Upload an image'}
-                </p>
-              </div>
-            )}
+    <div className="max-w-3xl w-full mx-auto grid items-start">
+      <form onSubmit={handleSubmit}>
+        <div className="grid w-full gap-6">
+          <div>
+            <Button type="submit">
+              {isSaving && (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              <span>Publish</span>
+            </Button>
           </div>
-        </button>
-        <div className="flex flex-col gap-6 my-6">
-          <div className="flex flex-col gap-2">
-            <input
-              type="file"
-              id="file"
-              ref={inputFile}
-              onChange={handleChange}
-              style={{ display: 'none' }}
-            />
-            <input
-              type="text"
+          <div className="prose prose-stone mx-auto w-full">
+            <TextareaAutosize
+              autoFocus
+              id="title"
+              defaultValue={contractName}
+              placeholder="Post title"
+              className="resize-none appearance-none overflow-hidden bg-transparent text-5xl font-bold focus:outline-none w-full"
               onChange={(e) => setContractNmae(e.target.value)}
-              placeholder="Name"
-              value={contractName}
-              className="text-black font-semibold w-full border-b border-black py-2 text-sm placeholder-black placeholder:font-semibold"
             />
-            <textarea
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder="Description"
-              ref={textAreaRef}
-              className="text-black w-fullpy-2 text-sm placeholder-black w-full min-h-[100px] whitespace-pre-wrap"
-            />
+            <div id="editor" className="min-h-[500px]" />
           </div>
         </div>
-        <Button disabled={uploading} onClick={handleCreateContract}>
-          {uploading ? 'Creating...' : 'Create'}
-        </Button>
-      </div>
+      </form>
     </div>
   );
 }

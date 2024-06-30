@@ -15,6 +15,8 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as collections from "../collections.js";
+import type * as mints from "../mints.js";
+import type * as tokens from "../tokens.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -26,6 +28,8 @@ import type * as collections from "../collections.js";
  */
 declare const fullApi: ApiFromModules<{
   collections: typeof collections;
+  mints: typeof mints;
+  tokens: typeof tokens;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -3,42 +3,43 @@ import { v } from 'convex/values';
 
 export const create = mutation({
   args: {
+    uid: v.number(),
+    block: v.any(),
+    tokenURI: v.string(),
+    metadataURI: v.string(),
     collectionAddress: v.string(),
     contractAdmin: v.string(),
-    contractName: v.string(),
-    username: v.string(),
-    pfp: v.string(),
   },
   handler: async (
     ctx,
-    { collectionAddress, contractAdmin, contractName, username, pfp }
+    { uid, block, tokenURI, metadataURI, collectionAddress, contractAdmin }
   ) => {
-    return await ctx.db.insert('collections', {
+    return await ctx.db.insert('tokens', {
+      uid,
+      block,
+      tokenURI,
+      metadataURI,
       collectionAddress,
       contractAdmin,
-      contractName,
-      username,
-      pfp,
     });
   },
 });
 
-export const getCollection = query({
+export const getCollectionTokens = query({
   args: { collectionAddress: v.string() },
   handler: async (ctx, { collectionAddress }) => {
-    const collection = await ctx.db
-      .query('collections')
+    return await ctx.db
+      .query('tokens')
       .filter((q) => q.eq(q.field('collectionAddress'), collectionAddress))
       .collect();
-    return collection[0];
   },
 });
 
-export const getAdminCollections = query({
+export const getAdminTokens = query({
   args: { contractAdmin: v.string() },
   handler: async (ctx, { contractAdmin }) => {
     return await ctx.db
-      .query('collections')
+      .query('tokens')
       .filter((q) => q.eq(q.field('contractAdmin'), contractAdmin))
       .collect();
   },
