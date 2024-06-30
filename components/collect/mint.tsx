@@ -32,7 +32,7 @@ export function Mint({
 }: {
   children: React.ReactNode;
   text: string;
-  tokenContract: string;
+  tokenContract: `0x${string}`;
   uid: number;
 }) {
   const { user, login } = usePrivy();

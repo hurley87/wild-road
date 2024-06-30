@@ -5,6 +5,6 @@ interface CollectPageProps {
 }
 
 export default async function Collect({ params }: CollectPageProps) {
-  const collectionAddress = params.collectionAddress as string;
+  const collectionAddress = params.collectionAddress as `0x${string}`;
   return <CollectPage collectionAddress={collectionAddress} />;
 }

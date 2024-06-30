@@ -5,11 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Mint } from './mint';
 import { Fragment } from 'react';
 import Link from 'next/link';
+import { FrameMetadata } from '@coinbase/onchainkit/frame';
 
 export default function CollectPage({
   collectionAddress,
 }: {
-  collectionAddress: string;
+  collectionAddress: `0x${string}`;
 }) {
   const collection = useQuery(api.collections.getCollection, {
     collectionAddress,
@@ -70,6 +71,33 @@ export default function CollectPage({
           </Fragment>
         ))}
       </div>
+      <FrameMetadata
+        buttons={[
+          {
+            label: 'Tell me the story',
+          },
+          {
+            action: 'link',
+            label: 'Link to Google',
+            target: 'https://www.google.com',
+          },
+          {
+            action: 'post_redirect',
+            label: 'Redirect to cute pictures',
+          },
+        ]}
+        image={{
+          src: 'https://zizzamia.xyz/park-3.png',
+          aspectRatio: '1:1',
+        }}
+        input={{
+          text: 'Tell me a boat story',
+        }}
+        state={{
+          counter: 1,
+        }}
+        postUrl="https://zizzamia.xyz/api/frame"
+      />
     </div>
   );
 }
