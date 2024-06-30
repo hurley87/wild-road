@@ -228,6 +228,11 @@ function CreatePost() {
           'https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/cdd23a72-ca58-49c3-9054-7f0ce3d42e00/original',
       });
 
+      toast({
+        title: 'Created Collectiom',
+        description: collectionAddress,
+      });
+
       await createToken({
         uid,
         block: null,
@@ -235,6 +240,11 @@ function CreatePost() {
         metadataURI,
         collectionAddress,
         contractAdmin,
+      });
+
+      toast({
+        title: `Created token #${uid}`,
+        description: contractName,
       });
 
       for (const token of blocks) {
@@ -289,6 +299,11 @@ function CreatePost() {
           metadataURI,
           collectionAddress,
           contractAdmin,
+        });
+
+        toast({
+          title: `Created token #${uid}`,
+          description: tokenText,
         });
       }
 

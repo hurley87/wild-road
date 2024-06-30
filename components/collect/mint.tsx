@@ -8,6 +8,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { chain } from '@/constants/chain';
@@ -114,6 +115,10 @@ export function Mint({
     <Drawer>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
+        <div className="hidden">
+          <DrawerTitle>Mint</DrawerTitle>
+        </div>
+
         <div className="mx-auto w-full max-w-sm">
           <div className="px-4 flex flex-col gap-3">
             <div className="text-lg h-80 w-full rounded-sm p-2 border">
