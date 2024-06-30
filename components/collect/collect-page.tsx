@@ -64,7 +64,7 @@ export default function CollectPage({
                 uid={token.uid}
               >
                 <button className="text-sm text-left text-muted-foreground hover:shadow-lg hover:text-black hover:p-2 scale-1.2 transition-all duration-200 ease-in-out w-fit rounded-sm">
-                  {token.block.data.text}
+                  {token.block.data.text.replace(/<[^>]*>?/gm, ' ')}
                 </button>
               </Mint>
             )}
