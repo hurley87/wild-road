@@ -21,7 +21,6 @@ export default function CollectPage({
   if (!collection) return null;
 
   const date = new Date(collection._creationTime + 1000);
-
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6">
       <Link
@@ -64,7 +63,7 @@ export default function CollectPage({
                 uid={token.uid}
               >
                 <button className="text-sm text-left text-muted-foreground hover:shadow-lg hover:text-black hover:p-2 scale-1.2 transition-all duration-200 ease-in-out w-fit rounded-sm">
-                  {token.block.data.text.replace(/<[^>]*>?/gm, ' ')}
+                  {token.block.data.text.replace('&nbsp;', ' ')}
                 </button>
               </Mint>
             )}
