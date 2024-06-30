@@ -6,6 +6,7 @@ import { Mint } from './mint';
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { FrameMetadata } from '@coinbase/onchainkit/frame';
+import { toEther } from '@thirdweb-dev/react';
 
 export default function CollectPage({
   collectionAddress,
@@ -20,6 +21,9 @@ export default function CollectPage({
   });
 
   if (!collection) return null;
+
+  console.log('tokens', tokens);
+  console.log('collection', collection);
 
   const date = new Date(collection._creationTime + 1000);
   return (
@@ -74,29 +78,15 @@ export default function CollectPage({
       <FrameMetadata
         buttons={[
           {
-            label: 'Tell me the story',
-          },
-          {
             action: 'link',
-            label: 'Link to Google',
-            target: 'https://www.google.com',
-          },
-          {
-            action: 'post_redirect',
-            label: 'Redirect to cute pictures',
+            label: 'Mint',
+            target: `https://zora.co/collect/base:${collection.collectionAddress}`,
           },
         ]}
         image={{
-          src: 'https://zizzamia.xyz/park-3.png',
+          src: tokens?.[0]?.tokenURI,
           aspectRatio: '1:1',
         }}
-        input={{
-          text: 'Tell me a boat story',
-        }}
-        state={{
-          counter: 1,
-        }}
-        postUrl="https://zizzamia.xyz/api/frame"
       />
     </div>
   );
