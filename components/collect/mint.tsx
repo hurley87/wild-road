@@ -122,7 +122,7 @@ export function Mint({
         <div className="mx-auto w-full max-w-sm">
           <div className="px-4 flex flex-col gap-3">
             <div className="text-lg h-80 w-full rounded-sm p-2 border">
-              {text}
+              {text.replace('&nbsp;', ' ')}
             </div>
             <Input
               type="text"
