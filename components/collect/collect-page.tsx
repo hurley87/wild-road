@@ -63,7 +63,7 @@ export default function CollectPage({
                 tokenContract={collectionAddress}
                 uid={token.uid}
               >
-                <button className="text-left hover:shadow-lg hover:text-black p-1 hover:border transition-all duration-200 ease-in-out w-fit rounded-sm">
+                <button className="md:text-lg text-left hover:shadow-lg hover:text-black p-1 border border-white hover:border-stone-300 transition-all duration-200 ease-in-out w-fit rounded-sm">
                   {token.block.data.text.replace('&nbsp;', ' ')}
                 </button>
               </Mint>
