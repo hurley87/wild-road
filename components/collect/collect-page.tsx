@@ -6,7 +6,6 @@ import { Mint } from './mint';
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { FrameMetadata } from '@coinbase/onchainkit/frame';
-import { toEther } from '@thirdweb-dev/react';
 
 export default function CollectPage({
   collectionAddress,
@@ -21,9 +20,6 @@ export default function CollectPage({
   });
 
   if (!collection) return null;
-
-  console.log('tokens', tokens);
-  console.log('collection', collection);
 
   const date = new Date(collection._creationTime + 1000);
   return (
@@ -52,7 +48,7 @@ export default function CollectPage({
         tokenContract={collectionAddress}
         uid={1}
       >
-        <div className="text-4xl font-bold hover:shadow-lg hover:p-2 scale-1.2 transition-all duration-200 ease-in-out w-fit rounded-sm cursor-pointer">
+        <div className="text-4xl font-bold hover:shadow-lg  p-1 hover:border transition-all duration-200 ease-in-out w-fit rounded-sm cursor-pointer">
           {collection.contractName}
         </div>
       </Mint>
@@ -67,7 +63,7 @@ export default function CollectPage({
                 tokenContract={collectionAddress}
                 uid={token.uid}
               >
-                <button className="text-sm text-left text-muted-foreground hover:shadow-lg hover:text-black hover:p-2 scale-1.2 transition-all duration-200 ease-in-out w-fit rounded-sm">
+                <button className="text-left hover:shadow-lg hover:text-black p-1 hover:border transition-all duration-200 ease-in-out w-fit rounded-sm">
                   {token.block.data.text.replace('&nbsp;', ' ')}
                 </button>
               </Mint>

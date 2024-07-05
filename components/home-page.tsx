@@ -4,7 +4,6 @@ import { Button } from './ui/button';
 import { createCollectorClient } from '@zoralabs/protocol-sdk';
 import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { chain } from '@/constants/chain';
-import { useWallet } from '@thirdweb-dev/react';
 
 export default function HomePage() {
   const { login, user } = usePrivy();
