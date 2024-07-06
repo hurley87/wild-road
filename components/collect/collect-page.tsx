@@ -22,6 +22,7 @@ export default function CollectPage({
   if (!collection) return null;
 
   const date = new Date(collection._creationTime + 1000);
+
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6">
       <Link
@@ -48,7 +49,7 @@ export default function CollectPage({
         tokenContract={collectionAddress}
         uid={1}
       >
-        <div className="text-4xl font-bold hover:shadow-lg  p-1 hover:border transition-all duration-200 ease-in-out w-fit rounded-sm cursor-pointer">
+        <div className="text-4xl font-bold hover:shadow-md p-1 border border-white hover:border-stone-100 transition-all duration-200 ease-in-out w-fit rounded-sm cursor-pointer">
           {collection.contractName}
         </div>
       </Mint>
@@ -63,7 +64,7 @@ export default function CollectPage({
                 tokenContract={collectionAddress}
                 uid={token.uid}
               >
-                <button className="md:text-lg text-left hover:shadow-lg hover:text-black p-1 border border-white hover:border-stone-100 transition-all duration-200 ease-in-out w-fit rounded-sm">
+                <button className="md:text-lg text-left hover:shadow-md hover:text-black p-1 border border-white hover:border-stone-100 transition-all duration-200 ease-in-out w-fit rounded-sm">
                   {token.block.data.text.replace('&nbsp;', ' ')}
                 </button>
               </Mint>

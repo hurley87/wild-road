@@ -11,11 +11,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage } from './ui/avatar';
+import { formatAddress } from '@/lib/utils';
+import { getAvatarUrl } from '@/lib/utils';
 
 export default function Header() {
   const { login, user, logout } = usePrivy();
   const address = user?.wallet?.address as `0x${string}`;
   const farcaster = user?.farcaster;
+  const username = formatAddress(address);
+  const avatarImg = getAvatarUrl(address);
 
   return (
     <div className="w-full flex justify-between py-3 px-6 items-center">
@@ -32,11 +36,7 @@ export default function Header() {
               <Avatar className="h-6 w-6">
                 <AvatarImage
                   alt="Picture"
-                  src={
-                    farcaster
-                      ? (farcaster.pfp as string)
-                      : `https://zora.co/api/avatar/${address}?size=36`
-                  }
+                  src={farcaster ? (farcaster.pfp as string) : avatarImg}
                 />
               </Avatar>
             </DropdownMenuTrigger>
@@ -52,7 +52,7 @@ export default function Header() {
                     </Link>
                   ) : (
                     <Link target="_blank" href={`https://zora.co/${address}`}>
-                      {address?.slice(0, 4)}...{address?.slice(-4)}
+                      {username}
                     </Link>
                   )}
                 </div>

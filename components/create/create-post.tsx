@@ -12,12 +12,15 @@ import { chain } from '@/constants/chain';
 import { Button } from '../ui/button';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { WebIrys } from '@irys/sdk';
 import EditorJS from '@editorjs/editorjs';
 import { Icons } from '../icons';
 import TextareaAutosize from 'react-textarea-autosize';
 import '@/styles/editor.css';
 import { toast } from '../ui/use-toast';
+import { getWebIrys } from '@/lib/utils';
+
+const IRYS_URL = 'https://gateway.irys.xyz/mutable/';
+const REF = 'editor';
 
 function CreatePost() {
   const ref = useRef<EditorJS>();
@@ -44,7 +47,7 @@ function CreatePost() {
 
     if (!ref.current) {
       const editor = new EditorJS({
-        holder: 'editor',
+        holder: REF,
         onReady() {
           ref.current = editor;
         },
@@ -79,27 +82,71 @@ function CreatePost() {
     }
   }, [isMounted, initializeEditor]);
 
-  async function getWebIrys() {
-    const network = 'devnet';
-    const token = 'ethereum';
-
+  const getUri = async (text: string) => {
     const provider = await wallet?.getEthersProvider();
-    if (!provider) throw new Error(`Cannot find privy wallet`);
+    if (!provider || wallet?.walletClientType !== 'privy')
+      throw new Error(`Cannot find privy wallet`);
 
-    const irysWallet =
-      wallet?.walletClientType === 'privy'
-        ? { name: 'privy-embedded', provider, sendTransaction }
-        : { name: 'privy', provider };
-
-    const webIrys = new WebIrys({
-      network,
-      token,
-      wallet: irysWallet,
+    const webIrys = await getWebIrys({
+      name: 'privy-embedded',
+      provider,
+      sendTransaction,
     });
 
-    await webIrys.ready();
-    return webIrys; // Return the webIrys instance
-  }
+    const name = text.length > 10 ? text.slice(0, 10) + '...' : text;
+
+    const { thumbnailFile } = await generateTextNftMetadataFiles(contractName);
+    const tokenReceipt = await webIrys.uploadFile(thumbnailFile);
+    const tokenURI = `${IRYS_URL}${tokenReceipt.id}`;
+
+    const tokenMetadata = {
+      name,
+      description: text,
+      image: tokenURI,
+    };
+
+    const tokenMetadataReceipt = await webIrys.upload(
+      JSON.stringify(tokenMetadata)
+    );
+
+    return `${IRYS_URL}${tokenMetadataReceipt.id}`;
+  };
+
+  const getToken = async (tokenURI: string) => {
+    const createReferral = process.env.NEXT_PUBLIC_REFERRAL as `0x${string}`;
+    return {
+      tokenURI,
+      createReferral,
+      mintStart: BigInt(0),
+      mintDuration: BigInt(0),
+      pricePerToken: BigInt(0),
+      payoutRecipient: contractAdmin,
+    };
+  };
+
+  const createPremint = async (contract: any, token: any) => {
+    const chainId = chain.id;
+    const creatorClient = createCreatorClient({ chainId, publicClient });
+    const { collectionAddress, premintConfig, signAndSubmit } =
+      await creatorClient.createPremint({
+        contract,
+        token,
+      });
+
+    const client = (await walletClient) as any;
+
+    await signAndSubmit({
+      account: contractAdmin,
+      walletClient: client,
+      checkSignature: true,
+    });
+
+    const uid = premintConfig?.uid;
+    return {
+      collectionAddress,
+      uid,
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,9 +162,6 @@ function CreatePost() {
       return;
     }
 
-    const outputData = await ref.current?.save();
-    const blocks = outputData?.blocks;
-
     if (contractName.length < 1) {
       toast({
         title: 'Please add a title',
@@ -126,6 +170,9 @@ function CreatePost() {
       setIsSaving(false);
       return;
     }
+
+    const outputData = await ref.current?.save();
+    const blocks = outputData?.blocks;
 
     if (!blocks || blocks?.length === 0) {
       toast({
@@ -136,37 +183,8 @@ function CreatePost() {
       return;
     }
 
-    const chainId = chain.id;
-    const creatorClient = createCreatorClient({ chainId, publicClient });
-    const { thumbnailFile } = await generateTextNftMetadataFiles(contractName);
-
-    const webIrys = await getWebIrys(); // Get the webIrys instance
-
     try {
-      const receipt = await webIrys.uploadFile(thumbnailFile);
-      const uri = `https://gateway.irys.xyz/mutable/${receipt.id}`;
-      console.log('Minting NFT with URI:', uri);
-
-      const contractMetadata = {
-        name: contractName,
-        image: uri,
-      };
-
-      const contractMetadataReceipt = await webIrys.upload(
-        JSON.stringify(contractMetadata)
-      );
-      const contractURI = `https://gateway.irys.xyz/mutable/${contractMetadataReceipt.id}`;
-      console.log('Minting NFT with Metadata URI:', contractURI);
-
-      const client = await walletClient;
-      if (!client) {
-        toast({
-          title: 'Connect your wallet',
-          variant: 'destructive',
-        });
-        setIsSaving(false);
-        return;
-      }
+      const contractURI = await getUri(contractName);
 
       const contract = {
         contractAdmin,
@@ -174,58 +192,19 @@ function CreatePost() {
         contractURI,
       };
 
-      const tokenText = contractName;
-      const name =
-        tokenText.length > 10 ? tokenText.slice(0, 10) + '...' : tokenText;
+      const token = await getToken(contractURI);
 
-      const { thumbnailFile: tokenImage } =
-        await generateTextNftMetadataFiles(tokenText);
+      const { uid, collectionAddress } = await createPremint(contract, token);
 
-      const tokenReceipt = await webIrys.uploadFile(tokenImage);
-      const tokenURI = `https://gateway.irys.xyz/mutable/${tokenReceipt.id}`;
-      console.log('Minting NFT with URI:', tokenURI);
-
-      const tokenMetadata = {
-        name,
-        description: tokenText,
-        image: tokenURI,
-      };
-
-      const tokenMetadataReceipt = await webIrys.upload(
-        JSON.stringify(tokenMetadata)
-      );
-      const metadataURI = `https://gateway.irys.xyz/mutable/${tokenMetadataReceipt.id}`;
-      console.log('Minting NFT with Metadata URI:', metadataURI);
-
-      const { collectionAddress, premintConfig, signAndSubmit } =
-        await creatorClient.createPremint({
-          contract,
-          token: {
-            tokenURI: metadataURI,
-            createReferral: '0x1D266998DA65E25DE8e1770d48e0E55DDEE39D24',
-            mintStart: BigInt(0),
-            mintDuration: BigInt(0),
-            pricePerToken: BigInt(0),
-            payoutRecipient: contractAdmin,
-          },
-        });
-
-      await signAndSubmit({
-        account: contractAdmin,
-        walletClient: client,
-        checkSignature: true,
-      });
-
-      const uid = premintConfig?.uid;
+      const username = farcaster?.username || 'anon';
+      const pfp = farcaster?.pfp || '';
 
       await createCollection({
         collectionAddress,
         contractAdmin,
         contractName,
-        username: farcaster?.username || 'anon',
-        pfp:
-          farcaster?.pfp ||
-          'https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/cdd23a72-ca58-49c3-9054-7f0ce3d42e00/original',
+        username,
+        pfp,
       });
 
       toast({
@@ -236,8 +215,7 @@ function CreatePost() {
       await createToken({
         uid,
         block: null,
-        tokenURI,
-        metadataURI,
+        tokenURI: contractURI,
         collectionAddress,
         contractAdmin,
       });
@@ -247,56 +225,17 @@ function CreatePost() {
         description: contractName,
       });
 
-      for (const token of blocks) {
-        const tokenText = token?.data?.text;
-        const name =
-          tokenText.length > 10 ? tokenText.slice(0, 10) + '...' : tokenText;
+      for (const block of blocks) {
+        const tokenText = block?.data?.text;
+        const tokenURI = await getUri(block?.data?.text);
+        const token = await getToken(tokenURI);
 
-        const { thumbnailFile: tokenImage } =
-          await generateTextNftMetadataFiles(tokenText);
-
-        const tokenReceipt = await webIrys.uploadFile(tokenImage);
-        const tokenURI = `https://gateway.irys.xyz/mutable/${tokenReceipt.id}`;
-        console.log('Minting NFT with URI:', tokenURI);
-
-        const tokenMetadata = {
-          name,
-          description: tokenText,
-          image: tokenURI,
-        };
-
-        const tokenMetadataReceipt = await webIrys.upload(
-          JSON.stringify(tokenMetadata)
-        );
-        const metadataURI = `https://gateway.irys.xyz/mutable/${tokenMetadataReceipt.id}`;
-        console.log('Minting NFT with Metadata URI:', metadataURI);
-
-        const { collectionAddress, premintConfig, signAndSubmit } =
-          await creatorClient.createPremint({
-            contract,
-            token: {
-              tokenURI: metadataURI,
-              createReferral: '0x1D266998DA65E25DE8e1770d48e0E55DDEE39D24',
-              mintStart: BigInt(0),
-              mintDuration: BigInt(0),
-              pricePerToken: BigInt(0),
-              payoutRecipient: contractAdmin,
-            },
-          });
-
-        await signAndSubmit({
-          account: contractAdmin,
-          walletClient: client,
-          checkSignature: true,
-        });
-
-        const uid = premintConfig?.uid;
+        const { uid, collectionAddress } = await createPremint(contract, token);
 
         await createToken({
           uid,
-          block: token,
+          block,
           tokenURI,
-          metadataURI,
           collectionAddress,
           contractAdmin,
         });
@@ -308,8 +247,11 @@ function CreatePost() {
       }
 
       router.push(`/collect/${collectionAddress}`);
-    } catch (e) {
-      console.log('Error uploading file ', e);
+    } catch {
+      toast({
+        title: 'Error creating collection',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -334,7 +276,7 @@ function CreatePost() {
               className="resize-none appearance-none overflow-hidden bg-transparent text-5xl font-bold focus:outline-none w-full"
               onChange={(e) => setContractNmae(e.target.value)}
             />
-            <div id="editor" className="min-h-[500px]" />
+            <div id={REF} className="min-h-[500px]" />
           </div>
         </div>
       </form>

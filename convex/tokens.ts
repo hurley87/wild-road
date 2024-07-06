@@ -6,19 +6,17 @@ export const create = mutation({
     uid: v.number(),
     block: v.any(),
     tokenURI: v.string(),
-    metadataURI: v.string(),
     collectionAddress: v.string(),
     contractAdmin: v.string(),
   },
   handler: async (
     ctx,
-    { uid, block, tokenURI, metadataURI, collectionAddress, contractAdmin }
+    { uid, block, tokenURI, collectionAddress, contractAdmin }
   ) => {
     return await ctx.db.insert('tokens', {
       uid,
       block,
       tokenURI,
-      metadataURI,
       collectionAddress,
       contractAdmin,
     });

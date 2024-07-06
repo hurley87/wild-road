@@ -56,17 +56,11 @@ export function Mint({
 
     try {
       const { parameters } = await collectorClient.mint({
-        // the deterministic premint collection address
         tokenContract,
-        // type of item to mint
         mintType: 'premint',
-        // the uid of the premint to mint
         uid,
-        // how many tokens to mint
         quantityToMint,
-        // Comment to attach to the mint
         mintComment,
-        // the account to execute the transaction
         minterAccount,
       });
 
@@ -100,8 +94,7 @@ export function Mint({
         ),
       });
       setIsMinting(false);
-    } catch (e) {
-      console.error(e);
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to mint.',
@@ -126,7 +119,7 @@ export function Mint({
             </div>
             <Input
               type="text"
-              placeholder="Add a comment ..."
+              placeholder="What are your thoughts?"
               value={mintComment}
               onChange={(e) => setMintComment(e.target.value)}
             />

@@ -26,7 +26,6 @@ export const create = mutation({
 export const getCollectionTokens = query({
   args: { tokenContract: v.string() },
   handler: async (ctx, { tokenContract }) => {
-    console.log('tokenContract', tokenContract);
     return await ctx.db
       .query('mints')
       .filter((q) => q.eq(q.field('tokenContract'), tokenContract))

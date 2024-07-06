@@ -6,23 +6,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export async function getWebIrys(wallet: any, sendTransaction: any) {
+export async function getWebIrys(wallet: any) {
   const network = 'devnet';
-  const token = 'ethereum';
-
-  const provider = await wallet?.getEthersProvider();
-  if (!provider) throw new Error(`Cannot find privy wallet`);
-  const irysWallet =
-    wallet?.walletClientType === 'privy'
-      ? { name: 'privy-embedded', provider, sendTransaction }
-      : { name: 'privy', provider };
+  const token = 'base-eth';
 
   const webIrys = new WebIrys({
     network,
     token,
-    wallet: irysWallet,
+    wallet,
   });
 
   await webIrys.ready();
-  return webIrys; // Return the webIrys instance
+  return webIrys;
+}
+
+export function getAvatarUrl(address: string) {
+  return `https://zora.co/api/avatar/${address}?size=36`;
+}
+
+export function formatAddress(address: string) {
+  return `${address?.slice(0, 6)}...${address?.slice(-4)}`;
 }
