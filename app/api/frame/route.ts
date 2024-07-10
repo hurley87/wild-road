@@ -75,6 +75,13 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
   const collectionAddress = req.nextUrl.searchParams.get(
     'collectionAddress'
   ) as string;
+  console.log('message: ', message);
+  console.log('message.state: ', message.state);
+  console.log('message.state.serialized: ', message.state?.serialized);
+  console.log(
+    'decodeURIComponent(message.state?.serialized) ',
+    decodeURIComponent(message.state?.serialized)
+  );
   const state = JSON.parse(decodeURIComponent(message.state?.serialized));
 
   console.log('state: ', state);
