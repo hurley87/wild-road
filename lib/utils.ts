@@ -103,6 +103,7 @@ export const getImage = async (uri: string) => {
   if (!uri) return '';
   const metadata = await fetch(uri);
   const metadataJson = await metadata.json();
-  console.log('metadataImage: ', metadataJson.image);
-  return metadataJson.image;
+  const image = metadataJson.image.replace('/mutable/', '/');
+  console.log('image: ', image);
+  return image;
 };
