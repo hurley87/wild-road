@@ -13,7 +13,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 const getNeynarApiKey = () =>
   process.env.NODE_ENV === 'production'
-    ? process.env.NEYNAR_ONCHAIN_KIT
+    ? process.env.NEYNAR_API_KEY
     : 'NEYNAR_ONCHAIN_KIT';
 
 const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
