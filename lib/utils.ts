@@ -49,7 +49,6 @@ export const gaslessFundAndUploadSingleFile = async (
           const convertedMsg = Buffer.from(
             message['Transaction hash']
           ).toString('hex');
-          console.log('convertedMsg: ', convertedMsg);
           const res = await fetch('/api/signData', {
             method: 'POST',
             body: JSON.stringify({ signatureData: convertedMsg }),
@@ -101,7 +100,6 @@ export const uploadMetadata = async (metadata: any) => {
 };
 
 export const getImage = async (uri: string) => {
-  console.log('uri: ', uri);
   if (!uri) return '';
   const metadata = await fetch(uri);
   const metadataJson = await metadata.json();
