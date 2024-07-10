@@ -82,7 +82,14 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     'decodeURIComponent(message.state?.serialized) ',
     decodeURIComponent(message.state?.serialized)
   );
-  const state = JSON.parse(decodeURIComponent(message.state?.serialized));
+  let state = {
+    uid: 0,
+  };
+  try {
+    state = JSON.parse(decodeURIComponent(message.state?.serialized));
+  } catch (e) {
+    console.error(e);
+  }
 
   console.log('state: ', state);
   let uid = getUid(isNextButton, state.uid);
