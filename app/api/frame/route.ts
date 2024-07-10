@@ -56,9 +56,7 @@ const getButtons = (
 async function getResponse(req: NextRequest): Promise<NextResponse> {
   const body: FrameRequest = await req.json();
   const neynarApiKey = 'NEYNAR_ONCHAIN_KIT';
-  console.log('neynarApiKey: ', neynarApiKey);
   const allowFramegear = getAllowFramegear();
-  console.log('allowFramegear: ', allowFramegear);
   const { isValid, message } = await getFrameMessage(body, {
     neynarApiKey,
     allowFramegear,
@@ -69,19 +67,10 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
   }
 
   const button = message.button;
-
-  console.log('button: ', button);
   const isNextButton = button === 2;
   const collectionAddress = req.nextUrl.searchParams.get(
     'collectionAddress'
   ) as string;
-  console.log('message: ', message);
-  console.log('message.state: ', message.state);
-  console.log('message.state.serialized: ', message.state?.serialized);
-  console.log(
-    'decodeURIComponent(message.state?.serialized) ',
-    decodeURIComponent(message.state?.serialized)
-  );
   let state = {
     uid: 1,
   };
@@ -91,7 +80,6 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     console.error(e);
   }
 
-  console.log('state: ', state);
   let uid = getUid(isNextButton, state.uid);
 
   let token = await fetchQuery(api.tokens.getToken, { collectionAddress, uid });
@@ -103,8 +91,6 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     });
     uid = 1;
   }
-
-  console.log('token: ', token?.tokenURI);
 
   const src = await getImage(token?.tokenURI);
   const url = `${BASE_URL}/collect/${collectionAddress}`;
