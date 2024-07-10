@@ -24,11 +24,16 @@ export const create = mutation({
 });
 
 export const getCollectionTokens = query({
-  args: { tokenContract: v.string() },
-  handler: async (ctx, { tokenContract }) => {
+  args: { tokenContract: v.string(), uid: v.number() },
+  handler: async (ctx, { tokenContract, uid }) => {
     return await ctx.db
       .query('mints')
-      .filter((q) => q.eq(q.field('tokenContract'), tokenContract))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('tokenContract'), tokenContract),
+          q.gte(q.field('uid'), uid)
+        )
+      )
       .collect();
   },
 });

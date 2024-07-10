@@ -72,7 +72,12 @@ export default function Header() {
           </DropdownMenu>
         </div>
       ) : (
-        <Button onClick={login}>Login</Button>
+        <div className="flex gap-2">
+          <Link href="/create" className="bg-button p-2 rounded-2xl">
+            <Icons.add />
+          </Link>
+          <Button onClick={login}>Login</Button>
+        </div>
       )}
     </div>
   );

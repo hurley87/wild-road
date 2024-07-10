@@ -5,26 +5,25 @@ import {
   createCreatorClient,
   generateTextNftMetadataFiles,
 } from '@zoralabs/protocol-sdk';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import useWalletClient from '@/hooks/useWalletClient';
 import { useRouter } from 'next/navigation';
 import { chain } from '@/constants/chain';
 import { Button } from '../ui/button';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import EditorJS from '@editorjs/editorjs';
 import { Icons } from '../icons';
 import TextareaAutosize from 'react-textarea-autosize';
 import '@/styles/editor.css';
 import { toast } from '../ui/use-toast';
-import { getWebIrys } from '@/lib/utils';
+import { gaslessFundAndUploadSingleFile, uploadMetadata } from '@/lib/utils';
+import Link from 'next/link';
 
 const IRYS_URL = 'https://gateway.irys.xyz/mutable/';
-const REF = 'editor';
+const CHARACTER_COUNT_LIMIT = 999;
 
 function CreatePost() {
-  const ref = useRef<EditorJS>();
-  const { user, sendTransaction } = usePrivy();
+  const { user } = usePrivy();
   const farcaster = user?.farcaster;
   const contractAdmin = user?.wallet?.address as `0x${string}`;
   const { wallets } = useWallets();
@@ -38,78 +37,35 @@ function CreatePost() {
   const createCollection = useMutation(api.collections.create);
   const createToken = useMutation(api.tokens.create);
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [tokens, setTokens] = useState<any[]>([
+    {
+      id: 2,
+      text: '',
+    },
+  ]);
 
-  const initializeEditor = useCallback(async () => {
-    const EditorJS = (await import('@editorjs/editorjs')).default;
-    // const List = (await import('@editorjs/list')).default;
-
-    if (!ref.current) {
-      const editor = new EditorJS({
-        holder: REF,
-        onReady() {
-          ref.current = editor;
-        },
-        placeholder: 'Type here to write your post...',
-        inlineToolbar: false,
-        data: {
-          time: new Date().getTime(),
-          blocks: [],
-          version: '2.22.2',
-        },
-        tools: {
-          // list: List,
-        },
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsMounted(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      initializeEditor();
-
-      return () => {
-        ref.current?.destroy();
-        ref.current = undefined;
-      };
-    }
-  }, [isMounted, initializeEditor]);
-
-  const getUri = async (text: string) => {
+  const getURI = async (text: string) => {
     const provider = await wallet?.getEthersProvider();
+
     if (!provider || wallet?.walletClientType !== 'privy')
       throw new Error(`Cannot find privy wallet`);
 
-    const webIrys = await getWebIrys({
-      name: 'privy-embedded',
-      provider,
-      sendTransaction,
-    });
-
     const name = text.length > 10 ? text.slice(0, 10) + '...' : text;
 
-    const { thumbnailFile } = await generateTextNftMetadataFiles(contractName);
-    const tokenReceipt = await webIrys.uploadFile(thumbnailFile);
-    const tokenURI = `${IRYS_URL}${tokenReceipt.id}`;
+    const { thumbnailFile } = await generateTextNftMetadataFiles(text);
 
-    const tokenMetadata = {
+    const id = await gaslessFundAndUploadSingleFile(thumbnailFile, []);
+
+    const receiptId = await uploadMetadata({
       name,
       description: text,
-      image: tokenURI,
-    };
+      image: `${IRYS_URL}${id}`,
+    });
 
-    const tokenMetadataReceipt = await webIrys.upload(
-      JSON.stringify(tokenMetadata)
-    );
+    console.log('tokenURI', `${IRYS_URL}${receiptId}`);
 
-    return `${IRYS_URL}${tokenMetadataReceipt.id}`;
+    return `${IRYS_URL}${receiptId}`;
   };
 
   const getToken = async (tokenURI: string) => {
@@ -127,6 +83,7 @@ function CreatePost() {
   const createPremint = async (contract: any, token: any) => {
     const chainId = chain.id;
     const creatorClient = createCreatorClient({ chainId, publicClient });
+
     const { collectionAddress, premintConfig, signAndSubmit } =
       await creatorClient.createPremint({
         contract,
@@ -164,17 +121,14 @@ function CreatePost() {
 
     if (contractName.length < 1) {
       toast({
-        title: 'Please add a title',
+        title: 'Please add a collection title',
         variant: 'destructive',
       });
       setIsSaving(false);
       return;
     }
 
-    const outputData = await ref.current?.save();
-    const blocks = outputData?.blocks;
-
-    if (!blocks || blocks?.length === 0) {
+    if (tokens?.length === 0) {
       toast({
         title: 'Please write some content',
         variant: 'destructive',
@@ -183,8 +137,28 @@ function CreatePost() {
       return;
     }
 
+    // check if any token is empty
+    if (tokens.some((token) => token.text === '')) {
+      toast({
+        title: 'Please fill all the tokens',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    // check if any token is over the character limit
+    if (tokens.some((token) => token.text.length > CHARACTER_COUNT_LIMIT)) {
+      toast({
+        title: 'Some tokens are over the character limit',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+      return;
+    }
+
     try {
-      const contractURI = await getUri(contractName);
+      const contractURI = await getURI(contractName);
 
       const contract = {
         contractAdmin,
@@ -207,14 +181,9 @@ function CreatePost() {
         pfp,
       });
 
-      toast({
-        title: 'Created Collectiom',
-        description: collectionAddress,
-      });
-
       await createToken({
         uid,
-        block: null,
+        text: contractName,
         tokenURI: contractURI,
         collectionAddress,
         contractAdmin,
@@ -225,16 +194,19 @@ function CreatePost() {
         description: contractName,
       });
 
-      for (const block of blocks) {
-        const tokenText = block?.data?.text;
-        const tokenURI = await getUri(block?.data?.text);
-        const token = await getToken(tokenURI);
+      for (const token of tokens) {
+        const text = token?.text;
+        const tokenURI = await getURI(token?.text);
+        const tokenToSave = await getToken(tokenURI);
 
-        const { uid, collectionAddress } = await createPremint(contract, token);
+        const { uid, collectionAddress } = await createPremint(
+          contract,
+          tokenToSave
+        );
 
         await createToken({
           uid,
-          block,
+          text,
           tokenURI,
           collectionAddress,
           contractAdmin,
@@ -242,7 +214,7 @@ function CreatePost() {
 
         toast({
           title: `Created token #${uid}`,
-          description: tokenText,
+          description: text,
         });
       }
 
@@ -255,28 +227,125 @@ function CreatePost() {
     }
   };
 
+  const handleAddToken = () => {
+    // only add a new token if the last token has text
+    if (tokens[tokens.length - 1].text === '') {
+      toast({
+        title: 'Your last token is empty',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const newToken = {
+      id: tokens.length + 2,
+      text: '',
+    };
+    setTokens([...tokens, newToken]);
+  };
+
+  const handleTokenChange = (id: number, text: string) => {
+    const newTokens = tokens.map((token) =>
+      token.id === id ? { ...token, text } : token
+    );
+    setTokens(newTokens);
+  };
+
+  const deleteToken = (id: number) => {
+    const newTokens = tokens.filter((token) => token.id !== id);
+    setTokens(newTokens);
+  };
+
+  const getTokenCharacterCount = (id: number) => {
+    return tokens.find((token) => token.id === id).text.length;
+  };
+
+  if (!farcaster) {
+    return (
+      <div className="max-w-2xl w-full mx-auto grid items-start">
+        <div className="prose prose-stone mx-auto w-full flex flex-col gap-4 text-center">
+          <h1 className="text-2xl font-bold">
+            Please login with your Farcaster account
+          </h1>
+          <Link
+            target="_blank"
+            className="underline"
+            href="https://warpcast.com/"
+          >
+            Create a Farcaster account
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl w-full mx-auto grid items-start">
+    <div className="max-w-2xl w-full mx-auto grid items-start">
       <form onSubmit={handleSubmit}>
         <div className="grid w-full gap-6">
-          <div>
+          <div className="prose prose-stone mx-auto w-full flex flex-col gap-4">
+            <TextareaAutosize
+              autoFocus
+              id="title"
+              defaultValue={contractName}
+              placeholder="Collection title"
+              className="resize-none appearance-none overflow-hidden bg-transparent text-3xl font-bold focus:outline-none w-full"
+              onChange={(e) => setContractNmae(e.target.value)}
+            />
+            {tokens.map((token) => (
+              <div
+                key={token.id}
+                className={`flex items-start gap-4 border p-2 rounded-sm ${getTokenCharacterCount(token.id) > CHARACTER_COUNT_LIMIT && 'border-red-500'}`}
+              >
+                <div className="flex flex-col gap-4 w-full">
+                  <TextareaAutosize
+                    value={token.value}
+                    className="resize-none appearance-none overflow-hidden bg-transparent font-medium focus:outline-none w-full"
+                    placeholder="Write something..."
+                    onChange={(e) =>
+                      handleTokenChange(token.id, e.target.value)
+                    }
+                  />
+                  {token.text !== '' && (
+                    <div
+                      className={`${getTokenCharacterCount(token.id) > CHARACTER_COUNT_LIMIT && 'text-red-500'} text-xs italic`}
+                    >
+                      {getTokenCharacterCount(token.id)}/{CHARACTER_COUNT_LIMIT}
+                    </div>
+                  )}
+                </div>
+                {token.id !== 2 && (
+                  <div className="flex gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="border rounded-md p-1"
+                      onClick={() => deleteToken(token.id)}
+                    >
+                      <Icons.trash className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddToken}
+              >
+                Add Text
+              </Button>
+            </div>
+          </div>
+          <div className="flex w-full justify-end">
             <Button type="submit">
               {isSaving && (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               )}
               <span>Publish</span>
             </Button>
-          </div>
-          <div className="prose prose-stone mx-auto w-full">
-            <TextareaAutosize
-              autoFocus
-              id="title"
-              defaultValue={contractName}
-              placeholder="Post title"
-              className="resize-none appearance-none overflow-hidden bg-transparent text-5xl font-bold focus:outline-none w-full"
-              onChange={(e) => setContractNmae(e.target.value)}
-            />
-            <div id={REF} className="min-h-[500px]" />
           </div>
         </div>
       </form>

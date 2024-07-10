@@ -114,8 +114,8 @@ export function Mint({
 
         <div className="mx-auto w-full max-w-sm">
           <div className="px-4 flex flex-col gap-3">
-            <div className="text-lg h-80 w-full rounded-sm p-2 border">
-              {text.replace('&nbsp;', ' ')}
+            <div className="text-xs h-80 w-full rounded-sm p-2 border whitespace-pre-wrap">
+              {text}
             </div>
             <Input
               type="text"
@@ -174,7 +174,7 @@ export function Mint({
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>
-            <Comments tokenContract={tokenContract} />
+            <Comments tokenContract={tokenContract} uid={uid} />
           </DrawerFooter>
         </div>
       </DrawerContent>

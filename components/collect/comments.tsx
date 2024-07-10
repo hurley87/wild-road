@@ -3,10 +3,17 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Comment } from './comment';
 
-export function Comments({ tokenContract }: { tokenContract: string }) {
+export function Comments({
+  tokenContract,
+  uid,
+}: {
+  tokenContract: string;
+  uid: number;
+}) {
   if (!tokenContract) return null;
   const comments = useQuery(api.mints.getCollectionTokens, {
     tokenContract,
+    uid,
   });
 
   if (!comments) return null;

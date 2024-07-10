@@ -1,0 +1,121 @@
+import {
+  FrameButtonMetadata,
+  FrameRequest,
+  getFrameHtmlResponse,
+  getFrameMessage,
+} from '@coinbase/onchainkit/frame';
+import { api } from '@/convex/_generated/api';
+import { fetchQuery } from 'convex/nextjs';
+import { NextRequest, NextResponse } from 'next/server';
+
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+const getImage = async (uri: string) => {
+  const metadata = await fetch(uri);
+  const metadataJson = await metadata.json();
+  return metadataJson.image;
+};
+
+const getNeynarApiKey = () =>
+  process.env.NODE_ENV === 'production'
+    ? process.env.NEYNAR_ONCHAIN_KIT
+    : 'NEYNAR_ONCHAIN_KIT';
+
+const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
+
+const getUid = (isNextButton: boolean, currentUid: number) =>
+  isNextButton ? currentUid + 1 : currentUid - 1;
+
+const getButtons = (
+  uid: number,
+  target: string,
+  url: string
+): [FrameButtonMetadata, ...FrameButtonMetadata[]] => {
+  if (uid === 1) {
+    return [
+      {
+        action: 'link',
+        label: 'Read Online',
+        target: url,
+      },
+      {
+        label: 'Read Inline',
+      },
+      {
+        action: 'mint',
+        label: 'Mint',
+        target,
+      },
+    ];
+  }
+  return [
+    {
+      label: 'Previous',
+    },
+    {
+      label: 'Next',
+    },
+    {
+      action: 'mint',
+      label: 'Mint',
+      target,
+    },
+  ];
+};
+
+async function getResponse(req: NextRequest): Promise<NextResponse> {
+  const body: FrameRequest = await req.json();
+  const neynarApiKey = getNeynarApiKey();
+  const allowFramegear = getAllowFramegear();
+  const { isValid, message } = await getFrameMessage(body, {
+    neynarApiKey,
+    allowFramegear,
+  });
+
+  if (!isValid) {
+    return new NextResponse('Message not valid', { status: 500 });
+  }
+
+  const button = message.button;
+  const isNextButton = button === 2;
+  const collectionAddress = req.nextUrl.searchParams.get(
+    'collectionAddress'
+  ) as string;
+  const state = JSON.parse(decodeURIComponent(message.state?.serialized));
+  let uid = getUid(isNextButton, state.uid);
+
+  let token = await fetchQuery(api.tokens.getToken, { collectionAddress, uid });
+
+  if (!token) {
+    token = await fetchQuery(api.tokens.getToken, {
+      collectionAddress,
+      uid: 1,
+    });
+    uid = 1;
+  }
+
+  const src = await getImage(token?.tokenURI);
+  const url = `${BASE_URL}/collect/${collectionAddress}`;
+  const target = `eip155:8453:${collectionAddress}:${uid}`;
+  const buttons = getButtons(uid, target, url);
+
+  return new NextResponse(
+    getFrameHtmlResponse({
+      buttons,
+      image: {
+        src,
+        aspectRatio: '1:1',
+      },
+      postUrl: `${BASE_URL}/api/frame?collectionAddress=${collectionAddress}`,
+      state: {
+        uid,
+      },
+    })
+  );
+}
+
+export async function POST(req: NextRequest): Promise<Response> {
+  return getResponse(req);
+}
+
+export const dynamic = 'force-dynamic';

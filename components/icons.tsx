@@ -23,6 +23,7 @@ import {
   Lightbulb,
   User,
   X,
+  Share,
   type Icon as LucideIcon,
 } from 'lucide-react';
 
@@ -50,6 +51,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  share: Share,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

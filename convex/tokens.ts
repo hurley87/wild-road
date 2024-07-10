@@ -4,18 +4,18 @@ import { v } from 'convex/values';
 export const create = mutation({
   args: {
     uid: v.number(),
-    block: v.any(),
+    text: v.string(),
     tokenURI: v.string(),
     collectionAddress: v.string(),
     contractAdmin: v.string(),
   },
   handler: async (
     ctx,
-    { uid, block, tokenURI, collectionAddress, contractAdmin }
+    { uid, text, tokenURI, collectionAddress, contractAdmin }
   ) => {
     return await ctx.db.insert('tokens', {
       uid,
-      block,
+      text,
       tokenURI,
       collectionAddress,
       contractAdmin,
@@ -30,6 +30,22 @@ export const getCollectionTokens = query({
       .query('tokens')
       .filter((q) => q.eq(q.field('collectionAddress'), collectionAddress))
       .collect();
+  },
+});
+
+export const getToken = query({
+  args: { uid: v.number(), collectionAddress: v.string() },
+  handler: async (ctx, { uid, collectionAddress }) => {
+    const token = await ctx.db
+      .query('tokens')
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('uid'), uid),
+          q.eq(q.field('collectionAddress'), collectionAddress)
+        )
+      )
+      .collect();
+    return token[0];
   },
 });
 
