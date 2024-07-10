@@ -83,7 +83,7 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     decodeURIComponent(message.state?.serialized)
   );
   let state = {
-    uid: 0,
+    uid: 1,
   };
   try {
     state = JSON.parse(decodeURIComponent(message.state?.serialized));
