@@ -11,8 +11,6 @@ import { getImage } from '@/lib/utils';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-const getNeynarApiKey = () => 'NEYNAR_ONCHAIN_KIT';
-
 const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
 
 const getUid = (isNextButton: boolean, currentUid: number) =>
@@ -57,7 +55,7 @@ const getButtons = (
 
 async function getResponse(req: NextRequest): Promise<NextResponse> {
   const body: FrameRequest = await req.json();
-  const neynarApiKey = getNeynarApiKey();
+  const neynarApiKey = 'NEYNAR_ONCHAIN_KIT';
   console.log('neynarApiKey: ', neynarApiKey);
   const allowFramegear = getAllowFramegear();
   console.log('allowFramegear: ', allowFramegear);
@@ -71,11 +69,15 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
   }
 
   const button = message.button;
+
+  console.log('button: ', button);
   const isNextButton = button === 2;
   const collectionAddress = req.nextUrl.searchParams.get(
     'collectionAddress'
   ) as string;
   const state = JSON.parse(decodeURIComponent(message.state?.serialized));
+
+  console.log('state: ', state);
   let uid = getUid(isNextButton, state.uid);
 
   let token = await fetchQuery(api.tokens.getToken, { collectionAddress, uid });

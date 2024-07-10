@@ -14,13 +14,17 @@ async function lazyFund(filesize: string): Promise<string> {
   const network = process.env.NEXT_PUBLIC_NETWORK || 'devnet';
   const providerUrl = process.env.NEXT_PUBLIC_RPC_URL;
 
-  const serverIrys = new Irys({
+  const irysConfig = {
     //@ts-ignore
     network, // mainnet || devnet
     token, // Token used for payment and signing
-    key: key,
+    key,
     config: { providerUrl }, // Optional provider URL, only required when using Devnet
-  });
+  };
+
+  console.log('irysConfig', irysConfig);
+
+  const serverIrys = new Irys(irysConfig);
   console.log(
     'serverIrysPubKey',
     //@ts-ignore
