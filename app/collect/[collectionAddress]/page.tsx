@@ -2,6 +2,7 @@ import CollectPage from '@/components/collect/collect-page';
 import { fetchQuery } from 'convex/nextjs';
 import { api } from '@/convex/_generated/api';
 import { getFrameMetadata } from '@coinbase/onchainkit/frame';
+import { getImage } from '@/lib/utils';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
@@ -16,8 +17,13 @@ export default async function Collect({ params }: CollectPageProps) {
 
 export async function generateMetadata({ params }: CollectPageProps) {
   const collectionAddress = params.collectionAddress as `0x${string}`;
+  const uid = 1;
   const collection = await fetchQuery(api.collections.getCollection, {
     collectionAddress,
+  });
+  const token = await fetchQuery(api.tokens.getToken, {
+    collectionAddress,
+    uid,
   });
   const title = collection.contractName;
   const description = `written by ${collection.username} on ${new Date(
@@ -26,9 +32,8 @@ export async function generateMetadata({ params }: CollectPageProps) {
   }`;
 
   const url = `${BASE_URL}/collect/${collectionAddress}`;
-  const image =
-    'https://gateway.irys.xyz/mutable/iUwk2hoG8ST2KiExDz2njaeyF1h5Y-NQx0EmgPctf1s';
-  const target = `eip155:8453:${collectionAddress}:1`;
+  const src = await getImage(token.tokenURI);
+  const target = `eip155:8453:${collectionAddress}:${uid}`;
   const frameMetadata = getFrameMetadata({
     buttons: [
       {
@@ -46,12 +51,12 @@ export async function generateMetadata({ params }: CollectPageProps) {
       },
     ],
     image: {
-      src: image,
+      src,
       aspectRatio: '1:1',
     },
     postUrl: `${BASE_URL}/api/frame?collectionAddress=${collectionAddress}`,
     state: {
-      uid: 1,
+      uid,
     },
   });
 
@@ -63,14 +68,14 @@ export async function generateMetadata({ params }: CollectPageProps) {
       description,
       url,
       siteName: 'ETF',
-      images: [image],
+      images: [src],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
       creator: '@seedclubhq',
-      images: [image],
+      images: [src],
     },
     other: {
       ...frameMetadata,

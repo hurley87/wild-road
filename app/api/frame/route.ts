@@ -7,14 +7,9 @@ import {
 import { api } from '@/convex/_generated/api';
 import { fetchQuery } from 'convex/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
+import { getImage } from '@/lib/utils';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-
-const getImage = async (uri: string) => {
-  const metadata = await fetch(uri);
-  const metadataJson = await metadata.json();
-  return metadataJson.image;
-};
 
 const getNeynarApiKey = () =>
   process.env.NODE_ENV === 'production'
@@ -93,6 +88,8 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     });
     uid = 1;
   }
+
+  console.log('token: ', token?.tokenURI);
 
   const src = await getImage(token?.tokenURI);
   const url = `${BASE_URL}/collect/${collectionAddress}`;

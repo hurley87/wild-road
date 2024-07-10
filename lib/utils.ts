@@ -32,8 +32,6 @@ export const gaslessFundAndUploadSingleFile = async (
   };
   const pubKey = Buffer.from(pubKeyRes.pubKey, 'hex');
 
-  console.log('pubKey: ', pubKey.toString());
-
   // Create a provider - this mimics the behaviour of the injected provider, i.e metamask
   const provider = {
     // for ETH wallets
@@ -72,29 +70,23 @@ export const gaslessFundAndUploadSingleFile = async (
   };
 
   // You can delete the lazyFund route if you're prefunding all uploads
-  const fundTx = await fetch('/api/lazyFund', {
+  await fetch('/api/lazyFund', {
     method: 'POST',
     body: selectedFile.size.toString(),
   });
 
-  console.log('fundTx: ', fundTx);
-
   // Create a new WebIrys object using the provider created with server info.
   const network = process.env.NEXT_PUBLIC_NETWORK || 'devnet';
   const token = process.env.NEXT_PUBLIC_TOKEN || '';
-
   const wallet = { name: 'ethersv5', provider: provider };
   //@ts-ignore
   const irys = new WebIrys({ network, token, wallet });
 
-  const w3signer = await provider.getSigner();
   await irys.ready();
 
-  console.log('Uploading irys=', irys);
   const tx = await irys.uploadFile(selectedFile, {
     tags,
   });
-  console.log(`Uploaded successfully. https://gateway.irys.xyz/${tx.id}`);
 
   return tx.id;
 };
@@ -106,4 +98,12 @@ export const uploadMetadata = async (metadata: any) => {
   });
   const { receiptId } = await res.json();
   return receiptId;
+};
+
+export const getImage = async (uri: string) => {
+  console.log('uri: ', uri);
+  if (!uri) return '';
+  const metadata = await fetch(uri);
+  const metadataJson = await metadata.json();
+  return metadataJson.image;
 };
