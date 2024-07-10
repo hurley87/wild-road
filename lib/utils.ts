@@ -107,3 +107,6 @@ export const getImage = async (uri: string) => {
   console.log('image: ', image);
   return image;
 };
+
+// https://gateway.irys.xyz/M7v0FTPCM3GCMp6lThrZEryeT5O4TyxF6d58F5VheX8
+// https://gateway.irys.xyz/CO9EpX0lekJEfXUOeXncUmMuG8eEp5WJHXl9U9yZUYA

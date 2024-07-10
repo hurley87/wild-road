@@ -19,7 +19,7 @@ import { toast } from '../ui/use-toast';
 import { gaslessFundAndUploadSingleFile, uploadMetadata } from '@/lib/utils';
 import Link from 'next/link';
 
-const IRYS_URL = 'https://gateway.irys.xyz/mutable/';
+const IRYS_URL = 'https://gateway.irys.xyz/';
 const CHARACTER_COUNT_LIMIT = 999;
 
 function CreatePost() {
@@ -55,7 +55,9 @@ function CreatePost() {
 
     const { thumbnailFile } = await generateTextNftMetadataFiles(text);
 
-    const id = await gaslessFundAndUploadSingleFile(thumbnailFile, []);
+    const id = await gaslessFundAndUploadSingleFile(thumbnailFile, [
+      { name: 'Content-Type', value: 'image/png' },
+    ]);
 
     const receiptId = await uploadMetadata({
       name,
