@@ -61,7 +61,9 @@ const getButtons = (
 async function getResponse(req: NextRequest): Promise<NextResponse> {
   const body: FrameRequest = await req.json();
   const neynarApiKey = getNeynarApiKey();
+  console.log('neynarApiKey: ', neynarApiKey);
   const allowFramegear = getAllowFramegear();
+  console.log('allowFramegear: ', allowFramegear);
   const { isValid, message } = await getFrameMessage(body, {
     neynarApiKey,
     allowFramegear,
