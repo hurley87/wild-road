@@ -1,10 +1,7 @@
 'use client';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createPublicClient, http } from 'viem';
-import {
-  createCreatorClient,
-  generateTextNftMetadataFiles,
-} from '@zoralabs/protocol-sdk';
+import { createCreatorClient } from '@zoralabs/protocol-sdk';
 import { useState } from 'react';
 import useWalletClient from '@/hooks/useWalletClient';
 import { useRouter } from 'next/navigation';
@@ -16,14 +13,13 @@ import { Icons } from '../icons';
 import TextareaAutosize from 'react-textarea-autosize';
 import '@/styles/editor.css';
 import { toast } from '../ui/use-toast';
-import { gaslessFundAndUploadSingleFile, uploadMetadata } from '@/lib/utils';
+import { getToken, getURI } from '@/lib/utils';
 import Link from 'next/link';
 
-const IRYS_URL = 'https://gateway.irys.xyz/';
-const CHARACTER_COUNT_LIMIT = 999;
+const CHARACTER_COUNT_LIMIT = 777;
 
 function CreatePost() {
-  const { user } = usePrivy();
+  const { user, linkFarcaster } = usePrivy();
   const farcaster = user?.farcaster;
   const contractAdmin = user?.wallet?.address as `0x${string}`;
   const { wallets } = useWallets();
@@ -44,43 +40,6 @@ function CreatePost() {
       text: '',
     },
   ]);
-
-  const getURI = async (text: string) => {
-    const provider = await wallet?.getEthersProvider();
-
-    if (!provider || wallet?.walletClientType !== 'privy')
-      throw new Error(`Cannot find privy wallet`);
-
-    const name = text.length > 10 ? text.slice(0, 10) + '...' : text;
-
-    const { thumbnailFile } = await generateTextNftMetadataFiles(text);
-
-    const id = await gaslessFundAndUploadSingleFile(thumbnailFile, [
-      { name: 'Content-Type', value: 'image/png' },
-    ]);
-
-    const receiptId = await uploadMetadata({
-      name,
-      description: text,
-      image: `${IRYS_URL}${id}`,
-    });
-
-    console.log('tokenURI', `${IRYS_URL}${receiptId}`);
-
-    return `${IRYS_URL}${receiptId}`;
-  };
-
-  const getToken = async (tokenURI: string) => {
-    const createReferral = process.env.NEXT_PUBLIC_REFERRAL as `0x${string}`;
-    return {
-      tokenURI,
-      createReferral,
-      mintStart: BigInt(0),
-      mintDuration: BigInt(0),
-      pricePerToken: BigInt(0),
-      payoutRecipient: contractAdmin,
-    };
-  };
 
   const createPremint = async (contract: any, token: any) => {
     const chainId = chain.id;
@@ -168,7 +127,7 @@ function CreatePost() {
         contractURI,
       };
 
-      const token = await getToken(contractURI);
+      const token = await getToken(contractURI, contractAdmin);
 
       const { uid, collectionAddress } = await createPremint(contract, token);
 
@@ -199,7 +158,7 @@ function CreatePost() {
       for (const token of tokens) {
         const text = token?.text;
         const tokenURI = await getURI(token?.text);
-        const tokenToSave = await getToken(tokenURI);
+        const tokenToSave = await getToken(tokenURI, contractAdmin);
 
         const { uid, collectionAddress } = await createPremint(
           contract,
@@ -263,19 +222,20 @@ function CreatePost() {
 
   if (!farcaster) {
     return (
-      <div className="max-w-2xl w-full mx-auto grid items-start">
-        <div className="prose prose-stone mx-auto w-full flex flex-col gap-4 text-center">
-          <h1 className="text-2xl font-bold">
-            Please login with your Farcaster account
-          </h1>
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] py-4">
+        <p className="text-sm text-muted-foreground text-center">
+          Link your Farcaster account to create a collection.
+        </p>
+        <Button onClick={linkFarcaster}>Link</Button>
+        <p className="px-8 text-center text-sm text-black">
           <Link
             target="_blank"
+            href="https://warpcast.com"
             className="underline"
-            href="https://warpcast.com/"
           >
-            Create a Farcaster account
+            Don't have an account? Sign Up
           </Link>
-        </div>
+        </p>
       </div>
     );
   }

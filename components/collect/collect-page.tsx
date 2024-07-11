@@ -29,8 +29,6 @@ export default function CollectPage({
   // reomve the first token as it is the collection token
   const contentTokens = tokens?.filter((token) => token.uid !== 1);
 
-  console.log('tokens', tokens);
-
   const handleCopyLink = async () => {
     navigator.clipboard.writeText(
       `${window.location.origin}/collect/${collection.collectionAddress}`
@@ -42,11 +40,7 @@ export default function CollectPage({
 
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6 pb-10">
-      <Mint
-        text={collection.contractName}
-        tokenContract={collectionAddress}
-        uid={1}
-      >
+      <Mint tokenContract={collectionAddress} uid={1}>
         <div className="text-4xl font-bold hover:shadow-md p-1 border border-white hover:border-stone-100 transition-all duration-200 ease-in-out w-fit rounded-sm cursor-pointer">
           {collection.contractName}
         </div>
@@ -87,7 +81,6 @@ export default function CollectPage({
             {token.block !== null && (
               <Mint
                 key={token.id}
-                text={token.text}
                 tokenContract={collectionAddress}
                 uid={token.uid}
               >

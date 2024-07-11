@@ -58,3 +58,18 @@ export const getAdminTokens = query({
       .collect();
   },
 });
+
+export const updateToken = mutation({
+  args: { id: v.id('tokens'), text: v.string(), tokenURI: v.string() },
+  handler: async (ctx, args) => {
+    const { id, text, tokenURI } = args;
+    await ctx.db.patch(id, { text, tokenURI });
+  },
+});
+
+export const deleteToken = mutation({
+  args: { id: v.id('tokens') },
+  handler: async (ctx, { id }) => {
+    await ctx.db.delete(id);
+  },
+});

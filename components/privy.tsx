@@ -10,13 +10,9 @@ function Privy({ children }: { children: React.ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        loginMethods: ['wallet', 'farcaster'],
+        loginMethods: ['wallet'],
         appearance: {
           theme: 'light',
-        },
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          noPromptOnSignature: true,
         },
         defaultChain,
       }}

@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { WebIrys } from '@irys/sdk';
+import { generateTextNftMetadataFiles } from '@zoralabs/protocol-sdk';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -104,8 +105,42 @@ export const getImage = async (uri: string) => {
   const metadata = await fetch(uri);
   const metadataJson = await metadata.json();
   const image = metadataJson.image.replace('/mutable/', '/');
-  console.log('image: ', image);
   return image;
+};
+
+const IRYS_URL = 'https://gateway.irys.xyz/';
+
+export const getURI = async (text: string, code?: null) => {
+  const name = text.length > 10 ? text.slice(0, 10) + '...' : text;
+  const { thumbnailFile } = await generateTextNftMetadataFiles(text);
+
+  const tags = [{ name: 'Content-Type', value: 'image/png' }];
+  if (code) tags.push({ name: 'Root-TX', value: code });
+
+  const id = await gaslessFundAndUploadSingleFile(thumbnailFile, tags);
+
+  const receiptId = await uploadMetadata({
+    name,
+    description: text,
+    image: `${IRYS_URL}${id}`,
+  });
+
+  return `${IRYS_URL}${receiptId}`;
+};
+
+export const getToken = async (
+  tokenURI: string,
+  payoutRecipient: `0x${string}`
+) => {
+  const createReferral = process.env.NEXT_PUBLIC_REFERRAL as `0x${string}`;
+  return {
+    tokenURI,
+    createReferral,
+    mintStart: BigInt(0),
+    mintDuration: BigInt(0),
+    pricePerToken: BigInt(0),
+    payoutRecipient,
+  };
 };
 
 // https://gateway.irys.xyz/M7v0FTPCM3GCMp6lThrZEryeT5O4TyxF6d58F5VheX8

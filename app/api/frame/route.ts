@@ -76,9 +76,7 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
   };
   try {
     state = JSON.parse(decodeURIComponent(message.state?.serialized));
-  } catch (e) {
-    console.error(e);
-  }
+  } catch {}
 
   let uid = getUid(isNextButton, state.uid);
 

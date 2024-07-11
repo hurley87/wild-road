@@ -43,27 +43,19 @@ export default function Header() {
             <DropdownMenuContent align="end">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none font-semibold">
-                  {farcaster ? (
-                    <Link
-                      target="_blank"
-                      href={`https://warpcast.com/${farcaster.username}`}
-                    >
-                      {farcaster.username}
-                    </Link>
-                  ) : (
-                    <Link target="_blank" href={`https://zora.co/${address}`}>
-                      {username}
-                    </Link>
-                  )}
+                  {farcaster ? farcaster.username : username}
                 </div>
               </div>
-              {/* <DropdownMenuSeparator />
+              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/posts">Posts</Link>
+                <Link
+                  className="cursor-pointer"
+                  target="_blank"
+                  href="https://zora.co/manage"
+                >
+                  Zora Rewards
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/collection">Collection</Link>
-              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onSelect={logout}>
                 Log out
