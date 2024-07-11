@@ -19,7 +19,7 @@ import Link from 'next/link';
 const CHARACTER_COUNT_LIMIT = 777;
 
 function CreatePost() {
-  const { user, linkFarcaster } = usePrivy();
+  const { user, linkFarcaster, login } = usePrivy();
   const farcaster = user?.farcaster;
   const contractAdmin = user?.wallet?.address as `0x${string}`;
   const { wallets } = useWallets();
@@ -219,6 +219,26 @@ function CreatePost() {
   const getTokenCharacterCount = (id: number) => {
     return tokens.find((token) => token.id === id).text.length;
   };
+
+  if (!user) {
+    return (
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] py-4">
+        <p className="text-sm text-muted-foreground text-center">
+          Connect your wallet to get started.
+        </p>
+        <Button onClick={login}>Connect</Button>
+        <p className="px-8 text-center text-sm text-black">
+          <Link
+            target="_blank"
+            href="https://rainbow.me/en/"
+            className="underline"
+          >
+            Don't have a wallet? Create one
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   if (!farcaster) {
     return (
