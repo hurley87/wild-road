@@ -19,7 +19,7 @@ export function Comments({
   if (!comments) return null;
 
   return (
-    <div className="max-h-16 overflow-auto flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {comments
         .filter((comment) => comment.mintComment.length > 0)
         .sort((a: any, b: any) => b.quantityToMint - a.quantityToMint)
