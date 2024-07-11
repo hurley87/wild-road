@@ -100,6 +100,7 @@ export function TokenMint({
         ),
       });
       setIsMinting(false);
+      setMintComment('');
     } catch {
       toast({
         title: 'Error',
