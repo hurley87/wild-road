@@ -101,6 +101,7 @@ export function TokenMint({
       });
       setIsMinting(false);
       setMintComment('');
+      setQuantityToMint(1);
     } catch {
       toast({
         title: 'Error',
