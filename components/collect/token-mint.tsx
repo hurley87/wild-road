@@ -112,6 +112,9 @@ export function TokenMint({
     }
   };
 
+  console.log('minterAccount', minterAccount);
+  console.log('contractAdmin', contractAdmin);
+
   const isAdmin = minterAccount === contractAdmin;
 
   return (

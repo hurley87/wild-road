@@ -35,10 +35,10 @@ function CreatePost() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [tokens, setTokens] = useState<any[]>([
-    {
-      id: 2,
-      text: '',
-    },
+    // {
+    //   id: 2,
+    //   text: '',
+    // },
   ]);
 
   const createPremint = async (contract: any, token: any) => {
