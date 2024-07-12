@@ -137,7 +137,7 @@ export function TokenMint({
 
               {!isAdmin && (
                 <div className="flex flex-col gap-3">
-                  <div className="text-xs h-80 w-full rounded-sm p-2 border overflow-auto">
+                  <div className="text-xs h-80 w-full rounded-sm p-2 border overflow-auto whitespace-pre-wrap">
                     {text}
                   </div>
 
