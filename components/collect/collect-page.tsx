@@ -26,6 +26,7 @@ export default function CollectPage({
   const date = new Date(collection._creationTime + 1000);
   // reomve the first token as it is the collection token
   const contentTokens = tokens?.filter((token) => token.uid !== 1);
+  const firstToken = tokens?.find((token) => token.uid === 1);
 
   const handleCopyLink = async () => {
     navigator.clipboard.writeText(
@@ -38,7 +39,7 @@ export default function CollectPage({
 
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6 pb-10">
-      <div className="text-4xl font-bold p-1">{collection.contractName}</div>
+      <div className="text-4xl font-bold p-1">{firstToken?.text}</div>
       <Link
         target="_blank"
         href={`https://warpcast.com/${collection.username}`}
