@@ -49,12 +49,12 @@ export default function CollectPage({
             <AvatarFallback>--</AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-medium leading-none">
+            <div className="text-sm font-medium leading-none">
               {collection.username}
-            </p>
-            <p className="text-sm text-muted-foreground">
+            </div>
+            <div className="text-sm text-muted-foreground">
               {date.toDateString()}
-            </p>
+            </div>
           </div>
         </div>
       </Link>

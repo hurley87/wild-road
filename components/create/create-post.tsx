@@ -225,11 +225,11 @@ function CreatePost() {
   if (!user) {
     return (
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] py-4">
-        <p className="text-sm text-muted-foreground text-center">
+        <div className="text-sm text-muted-foreground text-center">
           Connect your wallet to get started.
-        </p>
+        </div>
         <Button onClick={login}>Connect</Button>
-        <p className="px-8 text-center text-sm text-black">
+        <div className="px-8 text-center text-sm text-black">
           <Link
             target="_blank"
             href="https://rainbow.me/en/"
@@ -237,7 +237,7 @@ function CreatePost() {
           >
             Don't have a wallet? Create one
           </Link>
-        </p>
+        </div>
       </div>
     );
   }
@@ -245,11 +245,11 @@ function CreatePost() {
   if (!farcaster) {
     return (
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] py-4">
-        <p className="text-sm text-muted-foreground text-center">
+        <div className="text-sm text-muted-foreground text-center">
           Link your Farcaster account to create a collection.
-        </p>
+        </div>
         <Button onClick={linkFarcaster}>Link</Button>
-        <p className="px-8 text-center text-sm text-black">
+        <div className="px-8 text-center text-sm text-black">
           <Link
             target="_blank"
             href="https://warpcast.com"
@@ -257,7 +257,7 @@ function CreatePost() {
           >
             Don't have an account? Sign Up
           </Link>
-        </p>
+        </div>
       </div>
     );
   }

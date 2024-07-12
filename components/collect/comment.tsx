@@ -14,7 +14,7 @@ export function Comment({ mint }: { mint: any }) {
         <AvatarImage alt="Picture" src={avatarImg} />
       </Avatar>
       <div className="font-semibold">{username}:</div>
-      <p>{mint.mintComment}</p>
+      <div>{mint.mintComment}</div>
     </div>
   );
 }
