@@ -185,6 +185,8 @@ function CreatePost() {
         title: 'Error creating collection',
         variant: 'destructive',
       });
+      setIsSaving(false);
+      return;
     }
   };
 
