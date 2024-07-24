@@ -38,7 +38,7 @@ function EditCollection({
           </Button>
         </Link>
       </div>
-      <div className="grid w-full gap-6">
+      <div className="grid w-full gap-6 pt-6">
         <div className="text-4xl font-bold">{collection?.contractName}</div>
         <div className="prose prose-stone mx-auto w-full flex flex-col gap-6">
           <EditCollectionTokens collectionAddress={collectionAddress} />
