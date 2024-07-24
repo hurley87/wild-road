@@ -18,11 +18,21 @@ const getIrys = async () => {
 };
 
 export async function POST(req: NextRequest): Promise<Response> {
-  const data = await req.json();
+  const { name, description, image, metadataCode } = await req.json();
 
   const irys = await getIrys();
 
-  const receipt = await irys.upload(JSON.stringify(data));
+  const tags = [];
+  if (metadataCode) tags.push({ name: 'Root-TX', value: metadataCode });
+
+  const receipt = await irys.upload(
+    JSON.stringify({
+      name,
+      description,
+      image,
+    }),
+    { tags }
+  );
 
   const receiptId = receipt.id;
 

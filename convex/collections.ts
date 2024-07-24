@@ -6,17 +6,26 @@ export const create = mutation({
     collectionAddress: v.string(),
     contractAdmin: v.string(),
     contractName: v.string(),
+    contractURI: v.string(),
     username: v.string(),
     pfp: v.string(),
   },
   handler: async (
     ctx,
-    { collectionAddress, contractAdmin, contractName, username, pfp }
+    {
+      collectionAddress,
+      contractAdmin,
+      contractName,
+      contractURI,
+      username,
+      pfp,
+    }
   ) => {
     return await ctx.db.insert('collections', {
       collectionAddress,
       contractAdmin,
       contractName,
+      contractURI,
       username,
       pfp,
     });

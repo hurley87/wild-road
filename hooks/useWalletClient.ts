@@ -1,16 +1,11 @@
-import {
-  type WalletClient,
-  createWalletClient,
-  custom,
-  type Chain,
-} from 'viem';
+import { type WalletClient, createWalletClient, custom } from 'viem';
+import { chain } from '@/constants/chain';
 
 type WalletClientType = {
-  chain: Chain;
   wallet: any;
 };
 
-const useWalletClient = async ({ chain, wallet }: WalletClientType) => {
+const useWalletClient = async ({ wallet }: WalletClientType) => {
   if (!wallet) return null;
   // Switch your wallet to your target chain before getting the viem WalletClient
   await wallet?.switchChain(chain.id);

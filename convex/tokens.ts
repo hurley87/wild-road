@@ -5,20 +5,38 @@ export const create = mutation({
   args: {
     uid: v.number(),
     text: v.string(),
-    tokenURI: v.string(),
     collectionAddress: v.string(),
     contractAdmin: v.string(),
+    metadataCode: v.string(),
+    imageCode: v.string(),
+    image: v.string(),
+    imageDescription: v.string(),
+    imageName: v.string(),
   },
   handler: async (
     ctx,
-    { uid, text, tokenURI, collectionAddress, contractAdmin }
+    {
+      uid,
+      text,
+      collectionAddress,
+      contractAdmin,
+      metadataCode,
+      imageCode,
+      image,
+      imageDescription,
+      imageName,
+    }
   ) => {
     return await ctx.db.insert('tokens', {
       uid,
       text,
-      tokenURI,
       collectionAddress,
       contractAdmin,
+      metadataCode,
+      imageCode,
+      image,
+      imageDescription,
+      imageName,
     });
   },
 });
@@ -49,6 +67,13 @@ export const getToken = query({
   },
 });
 
+export const getTokenById = query({
+  args: { tokenId: v.id('tokens') },
+  handler: async (ctx, { tokenId }) => {
+    return await ctx.db.get(tokenId);
+  },
+});
+
 export const getAdminTokens = query({
   args: { contractAdmin: v.string() },
   handler: async (ctx, { contractAdmin }) => {
@@ -60,10 +85,33 @@ export const getAdminTokens = query({
 });
 
 export const updateToken = mutation({
-  args: { id: v.id('tokens'), text: v.string(), tokenURI: v.string() },
+  args: {
+    id: v.id('tokens'),
+    text: v.string(),
+    imageCode: v.string(),
+    metadataCode: v.string(),
+    image: v.optional(v.string()),
+    imageName: v.optional(v.string()),
+    imageDescription: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const { id, text, tokenURI } = args;
-    await ctx.db.patch(id, { text, tokenURI });
+    const {
+      id,
+      text,
+      imageCode,
+      metadataCode,
+      image,
+      imageName,
+      imageDescription,
+    } = args;
+    await ctx.db.patch(id, {
+      text,
+      imageCode,
+      metadataCode,
+      image,
+      imageName,
+      imageDescription,
+    });
   },
 });
 

@@ -4,6 +4,8 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Command,
   CreditCard,
   File,
@@ -16,6 +18,7 @@ import {
   MessageCircle,
   Moon,
   MoreVertical,
+  Pencil,
   Pizza,
   Plus,
   Settings,
@@ -25,6 +28,7 @@ import {
   User,
   X,
   Share,
+  Text,
   type Icon as LucideIcon,
 } from 'lucide-react';
 
@@ -36,6 +40,8 @@ export const Icons = {
   spinner: Loader2,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
+  chevronDown: ChevronDown,
   trash: Trash,
   post: FileText,
   page: File,
@@ -49,11 +55,13 @@ export const Icons = {
   user: User,
   arrowRight: ArrowRight,
   help: HelpCircle,
+  pencil: Pencil,
   pizza: Pizza,
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
   share: Share,
+  text: Text,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

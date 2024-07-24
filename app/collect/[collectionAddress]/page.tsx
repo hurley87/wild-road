@@ -3,8 +3,7 @@ import { fetchQuery } from 'convex/nextjs';
 import { api } from '@/convex/_generated/api';
 import { getFrameMetadata } from '@coinbase/onchainkit/frame';
 import { getImage } from '@/lib/utils';
-
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+import { BASE_URL } from '@/constants/common';
 
 interface CollectPageProps {
   params: { collectionAddress: string };
@@ -30,7 +29,6 @@ export async function generateMetadata({ params }: CollectPageProps) {
     collection._creationTime + 1000
   ).toDateString()}
   }`;
-
   const url = `${BASE_URL}/collect/${collectionAddress}`;
   const src = await getImage(token.tokenURI);
   const target = `eip155:8453:${collectionAddress}:${uid}`;

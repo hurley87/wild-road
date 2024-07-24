@@ -8,8 +8,7 @@ import { api } from '@/convex/_generated/api';
 import { fetchQuery } from 'convex/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { getImage } from '@/lib/utils';
-
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+import { BASE_URL } from '@/constants/common';
 
 const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
 
@@ -18,7 +17,6 @@ const getUid = (isNextButton: boolean, currentUid: number) =>
 
 const getButtons = (
   uid: number,
-  target: string,
   url: string
 ): [FrameButtonMetadata, ...FrameButtonMetadata[]] => {
   if (uid === 1) {
@@ -32,9 +30,9 @@ const getButtons = (
         label: 'Read Inline',
       },
       {
-        action: 'mint',
+        action: 'link',
         label: 'Mint',
-        target,
+        target: url + `?uid=1`,
       },
     ];
   }
@@ -46,9 +44,9 @@ const getButtons = (
       label: 'Next',
     },
     {
-      action: 'mint',
+      action: 'link',
       label: 'Mint',
-      target,
+      target: url + `?uid=${uid}`,
     },
   ];
 };
@@ -92,8 +90,7 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
 
   const src = await getImage(token?.tokenURI);
   const url = `${BASE_URL}/collect/${collectionAddress}`;
-  const target = `eip155:8453:${collectionAddress}:${uid}`;
-  const buttons = getButtons(uid, target, url);
+  const buttons = getButtons(uid, url);
 
   return new NextResponse(
     getFrameHtmlResponse({

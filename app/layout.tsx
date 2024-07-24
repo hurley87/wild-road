@@ -10,8 +10,8 @@ import ConvexClientProvider from './ConvexClientProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Wild Road',
-  description: 'Collect ideas',
+  title: 'IDEO Network',
+  description: 'Create and Collect Ideas',
 };
 
 const fontSans = FontSans({

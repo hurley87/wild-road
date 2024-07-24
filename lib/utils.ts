@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { WebIrys } from '@irys/sdk';
 import { generateTextNftMetadataFiles } from '@zoralabs/protocol-sdk';
+import { metadata } from '@/app/layout';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -110,22 +111,48 @@ export const getImage = async (uri: string) => {
 
 const IRYS_URL = 'https://gateway.irys.xyz/';
 
-export const getURI = async (text: string, code?: null) => {
+export const getTextCodes = async (
+  text: string,
+  imageCode?: string,
+  metadataCode?: string
+) => {
   const name = text.length > 10 ? text.slice(0, 10) + '...' : text;
   const { thumbnailFile } = await generateTextNftMetadataFiles(text);
 
   const tags = [{ name: 'Content-Type', value: 'image/png' }];
-  if (code) tags.push({ name: 'Root-TX', value: code });
-
+  if (imageCode) tags.push({ name: 'Root-TX', value: imageCode });
   const id = await gaslessFundAndUploadSingleFile(thumbnailFile, tags);
 
   const receiptId = await uploadMetadata({
     name,
     description: text,
     image: `${IRYS_URL}${id}`,
+    metadataCode,
   });
 
-  return `${IRYS_URL}${receiptId}`;
+  return { imageCode: id, metadataCode: receiptId };
+};
+
+export const getImageCodes = async (
+  File: File,
+  name: string,
+  description: string,
+  imageCode?: string,
+  metadataCode?: string
+) => {
+  const tags = [{ name: 'Content-Type', value: 'image/png' }];
+  if (imageCode) tags.push({ name: 'Root-TX', value: imageCode });
+
+  const id = await gaslessFundAndUploadSingleFile(File, tags);
+
+  const receiptId = await uploadMetadata({
+    name,
+    description,
+    image: `${IRYS_URL}${id}`,
+    metadataCode,
+  });
+
+  return { imageCode: id, metadataCode: receiptId };
 };
 
 export const getToken = async (

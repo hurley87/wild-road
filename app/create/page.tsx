@@ -1,12 +1,12 @@
-import CreatePost from '@/components/create/create-post';
+import CreateCollection from '@/components/create/create-collection';
 
 export async function generateMetadata() {
   return {
-    title: 'Wild',
-    description: 'Share your ideas',
+    title: 'IEDO Network',
+    description: 'Mint your ideas',
   };
 }
 
 export default async function CreatePage() {
-  return <CreatePost />;
+  return <CreateCollection />;
 }
