@@ -7,8 +7,7 @@ import {
 import { api } from '@/convex/_generated/api';
 import { fetchQuery } from 'convex/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
-import { getImage } from '@/lib/utils';
-import { BASE_URL } from '@/constants/common';
+import { BASE_URL, IRYS_URL } from '@/constants/common';
 
 const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
 
@@ -88,7 +87,7 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     uid = 1;
   }
 
-  const src = await getImage(token?.tokenURI);
+  const src = `${IRYS_URL}${token.imageCode}`;
   const url = `${BASE_URL}/collect/${collectionAddress}`;
   const buttons = getButtons(uid, url);
 

@@ -2,8 +2,7 @@ import CollectPage from '@/components/collect/collect-page';
 import { fetchQuery } from 'convex/nextjs';
 import { api } from '@/convex/_generated/api';
 import { getFrameMetadata } from '@coinbase/onchainkit/frame';
-import { getImage } from '@/lib/utils';
-import { BASE_URL } from '@/constants/common';
+import { BASE_URL, IRYS_URL } from '@/constants/common';
 
 interface CollectPageProps {
   params: { collectionAddress: string };
@@ -30,7 +29,7 @@ export async function generateMetadata({ params }: CollectPageProps) {
   ).toDateString()}
   }`;
   const url = `${BASE_URL}/collect/${collectionAddress}`;
-  const src = await getImage(token.tokenURI);
+  const src = `${IRYS_URL}${token.imageCode}`;
   const target = `eip155:8453:${collectionAddress}:${uid}`;
   const frameMetadata = getFrameMetadata({
     buttons: [

@@ -101,14 +101,6 @@ export const uploadMetadata = async (metadata: any) => {
   return receiptId;
 };
 
-export const getImage = async (uri: string) => {
-  if (!uri) return '';
-  const metadata = await fetch(uri);
-  const metadataJson = await metadata.json();
-  const image = metadataJson.image.replace('/mutable/', '/');
-  return image;
-};
-
 const IRYS_URL = 'https://gateway.irys.xyz/';
 
 export const getTextCodes = async (
