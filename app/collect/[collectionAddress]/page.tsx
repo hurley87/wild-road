@@ -30,7 +30,6 @@ export async function generateMetadata({ params }: CollectPageProps) {
   }`;
   const url = `${BASE_URL}/collect/${collectionAddress}`;
   const src = `${IRYS_URL}${token.imageCode}`;
-  const target = `eip155:8453:${collectionAddress}:${uid}`;
   const frameMetadata = getFrameMetadata({
     buttons: [
       {
@@ -44,7 +43,7 @@ export async function generateMetadata({ params }: CollectPageProps) {
       {
         action: 'mint',
         label: 'Mint',
-        target,
+        target: `${url}?uid=${uid}`,
       },
     ],
     image: {
