@@ -10,7 +10,7 @@ import ConvexClientProvider from './ConvexClientProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'IDEO Network',
+  title: 'Ideonetwork',
   description: 'Create and Collect Ideas',
 };
 

@@ -52,3 +52,10 @@ export const getAdminCollections = query({
       .collect();
   },
 });
+
+export const getCollectionById = query({
+  args: { id: v.id('collections') },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id);
+  },
+});

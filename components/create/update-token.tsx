@@ -35,6 +35,7 @@ function UpdateToken({ tokenId }: { tokenId: Id<'tokens'> }) {
   const [text, setText] = useState('');
   const [openEditText, setOpenEditText] = useState(false);
   const [isUpdatingToken, setIsUpdatingToken] = useState(false);
+  const [zoraUrl, setZoraUrl] = useState('');
   const collectionAddress = token?.collectionAddress;
   const uid = token?.uid;
 
@@ -43,6 +44,7 @@ function UpdateToken({ tokenId }: { tokenId: Id<'tokens'> }) {
     setImageName(token.imageName);
     setImageDescription(token.imageDescription);
     setText(token.text);
+    setZoraUrl(token.zoraUrl);
   }, [token]);
 
   const updateTextToken = async () => {
@@ -168,6 +170,59 @@ function UpdateToken({ tokenId }: { tokenId: Id<'tokens'> }) {
     setText('');
   };
 
+  const updateZoraToken = async () => {
+    setIsUpdatingToken(true);
+
+    if (!zoraUrl.includes('base:')) {
+      toast({
+        title: 'Please enter a valid Zora URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const collectionAddress = zoraUrl.split('base:')[1].split('/')[0];
+    const uid = parseInt(zoraUrl.split('/')[zoraUrl.split('/').length - 1]);
+
+    const response = await fetch('/api/tokenData', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ collectionAddress, uid }),
+    });
+
+    const { token } = await response.json();
+
+    const image = token.image_url;
+    const imageName = token.name;
+    const imageDescription = token.description;
+
+    await update({
+      id: tokenId,
+      text,
+      imageCode: '',
+      metadataCode: '',
+      image,
+      imageName,
+      imageDescription,
+      zoraUrl,
+    });
+
+    toast({
+      title: `Token's metadata updated`,
+    });
+
+    setOpenEditText(false);
+    setIsUpdatingToken(false);
+    setImageName('');
+    setImageDescription('');
+    setImageFile;
+    setImageFile(null);
+    setText('');
+    setZoraUrl('');
+  };
+
   return (
     <Dialog open={openEditText} onOpenChange={setOpenEditText}>
       <DialogTrigger>
@@ -184,7 +239,33 @@ function UpdateToken({ tokenId }: { tokenId: Id<'tokens'> }) {
         <DialogHeader>
           <DialogTitle>Update Token Metadata</DialogTitle>
           <DialogDescription>
-            {token?.image !== '' ? (
+            {token?.zoraUrl ? (
+              <div className="flex flex-col gap-6 pt-6">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label>Zora URL</Label>
+                  <Input
+                    value={zoraUrl}
+                    onChange={(e) => setZoraUrl(e.target.value)}
+                  />
+                  <p className="italic text-xs">
+                    e.g.
+                    https://zora.co/collect/base:0x1491ea485e78cdbe895293cbaeb2b707012197b9/6
+                  </p>
+                </div>
+                <div>
+                  <Button
+                    disabled={
+                      isUpdatingToken ||
+                      zoraUrl.length === 0 ||
+                      zoraUrl === token?.zoraUrl
+                    }
+                    onClick={updateZoraToken}
+                  >
+                    {isUpdatingToken ? 'Updating ...' : 'Update'}
+                  </Button>
+                </div>
+              </div>
+            ) : token?.image !== '' ? (
               <div className="flex flex-col gap-6 pt-6">
                 <div className="grid w-full items-center gap-1.5">
                   <Label>Name</Label>

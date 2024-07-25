@@ -9,6 +9,7 @@ import { Icons } from '../icons';
 import { usePrivy } from '@privy-io/react-auth';
 import Share from './share';
 import { useSearchParams } from 'next/navigation';
+import { Id } from '@/convex/_generated/dataModel';
 
 export default function CollectPage({
   collectionAddress,
@@ -17,27 +18,26 @@ export default function CollectPage({
 }) {
   const searchParams = useSearchParams();
   const uid = searchParams.get('uid');
-
   const { user } = usePrivy();
   const address = user?.wallet?.address as `0x${string}`;
   const collection = useQuery(api.collections.getCollection, {
     collectionAddress,
   });
+  const id = collection?._id as Id<'collections'>;
   const tokens = useQuery(api.tokens.getCollectionTokens, {
-    collectionAddress,
+    id,
   });
 
   if (!collection) return null;
 
   const date = new Date(collection._creationTime + 1000);
-  const contentTokens = tokens?.filter((token) => token.uid !== 1);
-  const firstToken = tokens?.find((token) => token.uid === 1);
+  const [firstToken, ...contentTokens] = tokens || [];
   const contractAdmin = collection?.contractAdmin;
   const isAdmin = address === contractAdmin;
 
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6 pb-10">
-      <div className="text-4xl font-bold">{firstToken?.text}</div>
+      <div className="text-4xl font-bold">{collection?.contractName}</div>
       <Link
         target="_blank"
         href={`https://warpcast.com/${collection.username}`}
@@ -59,13 +59,11 @@ export default function CollectPage({
       </Link>
       <div className="px-1">
         <div className="border border-y border-x-0 flex justify-between py-1">
-          <TokenMint
-            showMint={uid === '1'}
-            tokenContract={collectionAddress}
-            uid={1}
-          >
-            <Icons.chat className="w-4 h-4" />
-          </TokenMint>
+          {firstToken && (
+            <TokenMint showMint={uid === '1'} tokenId={firstToken._id}>
+              <Icons.chat className="w-4 h-4" />
+            </TokenMint>
+          )}
           <div className="flex gap-1">
             {isAdmin && (
               <Link href={`/create/${collectionAddress}`}>
@@ -85,9 +83,8 @@ export default function CollectPage({
       <div className="flex flex-col gap-6">
         {contentTokens?.map((token) => (
           <TokenMint
-            key={token.id}
-            tokenContract={collectionAddress}
-            uid={token.uid}
+            key={token._id}
+            tokenId={token._id}
             showMint={token.uid.toString() === uid}
           >
             {token.image !== '' ? (

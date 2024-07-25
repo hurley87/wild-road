@@ -27,6 +27,7 @@
     "@tanstack/react-query": "^5.45.0",
     "@thirdweb-dev/react": "^4.9.0",
     "@vercel/analytics": "^1.3.1",
+    "@zoralabs/nft-metadata": "^1.2.6",
     "@zoralabs/protocol-sdk": "^0.7.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -37,6 +38,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-textarea-autosize": "^8.5.3",
+    "simplehash-api": "^0.1.18",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1"

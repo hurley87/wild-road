@@ -2,7 +2,7 @@ import CreateCollection from '@/components/create/create-collection';
 
 export async function generateMetadata() {
   return {
-    title: 'IEDO Network',
+    title: 'Ideonetwork',
     description: 'Mint your ideas',
   };
 }

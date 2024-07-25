@@ -3,16 +3,14 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import DeleteToken from './delete-token';
 import UpdateToken from './update-token';
+import { Id } from '@/convex/_generated/dataModel';
 
-function EditCollectionTokens({
-  collectionAddress,
-}: {
-  collectionAddress: `0x${string}`;
-}) {
+function EditCollectionTokens({ id }: { id: Id<'collections'> }) {
   const tokensQuery = useQuery(api.tokens.getCollectionTokens, {
-    collectionAddress,
+    id,
   });
-  const tokens = tokensQuery?.filter((token) => token.uid !== 1) ?? [];
+
+  const tokens = (tokensQuery || []).slice(1);
 
   return (
     <div className="w-full flex flex-col gap-6">

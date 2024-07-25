@@ -68,7 +68,7 @@ function CreatePost() {
       const username = farcaster?.username as string;
       const pfp = farcaster?.pfp as string;
 
-      await createCollection({
+      const collectionId = await createCollection({
         collectionAddress,
         contractAdmin,
         contractName,
@@ -79,6 +79,7 @@ function CreatePost() {
 
       await createToken({
         uid,
+        collectionId,
         text: contractName,
         collectionAddress,
         contractAdmin,

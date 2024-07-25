@@ -24,17 +24,19 @@ function DeleteToken({ tokenId }: { tokenId: Id<'tokens'> }) {
     setIsDeletingToken(true);
 
     try {
-      const { signAndSubmit } = await creatorClient.deletePremint({
-        collection: collectionAddress,
-        uid,
-      });
+      if (!token.zoraUrl) {
+        const { signAndSubmit } = await creatorClient.deletePremint({
+          collection: collectionAddress,
+          uid,
+        });
 
-      const client = (await walletClient) as any;
+        const client = (await walletClient) as any;
 
-      await signAndSubmit({
-        account: contractAdmin,
-        walletClient: client,
-      });
+        await signAndSubmit({
+          account: contractAdmin,
+          walletClient: client,
+        });
+      }
 
       await deleteToken({
         id,

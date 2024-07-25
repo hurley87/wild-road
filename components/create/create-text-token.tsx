@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Icons } from '../icons';
 import { toast } from '../ui/use-toast';
@@ -19,19 +19,19 @@ import { Textarea } from '../ui/textarea';
 import createPremint from '@/lib/premint';
 import { CHARACTER_COUNT_LIMIT, IRYS_URL } from '@/constants/common';
 import { useContractAdmin } from '@/hooks/useContractAdmin';
+import { Id } from '@/convex/_generated/dataModel';
 
-function CreateTextToken({
-  contractName,
-  contractURI,
-}: {
-  contractName: string;
-  contractURI: string;
-}) {
+function CreateTextToken({ id }: { id: Id<'collections'> }) {
+  const collection = useQuery(api.collections.getCollectionById, {
+    id,
+  });
   const { contractAdmin, walletClient } = useContractAdmin();
   const createToken = useMutation(api.tokens.create);
   const [text, setText] = useState('');
   const [openCreateText, setOpenCreateText] = useState(false);
   const [isUpdatingToken, setIsUpdatingToken] = useState(false);
+  const contractName = collection?.contractName;
+  const contractURI = collection?.contractURI;
 
   const addTextToken = async () => {
     setIsUpdatingToken(true);
@@ -58,6 +58,7 @@ function CreateTextToken({
     await createToken({
       uid,
       text,
+      collectionId: id,
       collectionAddress,
       contractAdmin,
       metadataCode,
@@ -80,7 +81,7 @@ function CreateTextToken({
   return (
     <Dialog open={openCreateText} onOpenChange={setOpenCreateText}>
       <DialogTrigger>
-        <Button type="button" size="icon">
+        <Button type="button" size="icon" variant="outline">
           <Icons.text className="w-4 h-4" />
         </Button>
       </DialogTrigger>

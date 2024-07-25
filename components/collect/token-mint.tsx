@@ -21,16 +21,15 @@ import { Icons } from '../icons';
 import { Comments } from './comments';
 import { getCollectorClient } from '@/lib/collectorClient';
 import useWalletClient from '@/hooks/useWalletClient';
+import { Id } from '@/convex/_generated/dataModel';
 
 export function TokenMint({
   children,
-  tokenContract,
-  uid,
+  tokenId,
   showMint,
 }: {
   children: React.ReactNode;
-  tokenContract: `0x${string}`;
-  uid: number;
+  tokenId: Id<'tokens'>;
   showMint: boolean;
 }) {
   const { user, login } = usePrivy();
@@ -44,11 +43,12 @@ export function TokenMint({
   const create = useMutation(api.mints.create);
   const { toast } = useToast();
   const [isMinting, setIsMinting] = useState(false);
-  const token = useQuery(api.tokens.getToken, {
-    collectionAddress: tokenContract,
-    uid,
+  const token = useQuery(api.tokens.getTokenById, {
+    tokenId,
   });
   const text = token?.text;
+  const tokenContract = token?.collectionAddress;
+  const uid = token?.uid;
 
   const handleMint = async () => {
     setIsMinting(true);
@@ -154,7 +154,7 @@ export function TokenMint({
                 </div>
               </div>
               <div className="px-0 w-full flex flex-col gap-6">
-                {user ? (
+                {user && wallet ? (
                   <div className="w-full">
                     <Input
                       type="text"

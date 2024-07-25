@@ -8,6 +8,7 @@ import Link from 'next/link';
 import CreateTextToken from './create-text-token';
 import CreateImageToken from './create-image-token';
 import EditCollectionTokens from './edit-collection-tokens';
+import CreateZoraToken from './create-zora-token';
 
 function EditCollection({
   collectionAddress,
@@ -41,16 +42,11 @@ function EditCollection({
       <div className="grid w-full gap-6 pt-6">
         <div className="text-4xl font-bold">{collection?.contractName}</div>
         <div className="prose prose-stone mx-auto w-full flex flex-col gap-6">
-          <EditCollectionTokens collectionAddress={collectionAddress} />
+          <EditCollectionTokens id={collection._id} />
           <div className="flex gap-2 pb-6">
-            <CreateTextToken
-              contractName={collection?.contractName}
-              contractURI={collection?.contractURI}
-            />
-            <CreateImageToken
-              contractName={collection?.contractName}
-              contractURI={collection?.contractURI}
-            />
+            <CreateTextToken id={collection?._id} />
+            <CreateImageToken id={collection?._id} />
+            <CreateZoraToken id={collection?._id} />
           </div>
         </div>
       </div>

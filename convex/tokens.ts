@@ -5,19 +5,22 @@ export const create = mutation({
   args: {
     uid: v.number(),
     text: v.string(),
+    collectionId: v.id('collections'),
     collectionAddress: v.string(),
     contractAdmin: v.string(),
     metadataCode: v.string(),
     imageCode: v.string(),
     image: v.string(),
-    imageDescription: v.string(),
+    imageDescription: v.optional(v.string()),
     imageName: v.string(),
+    zoraUrl: v.optional(v.string()),
   },
   handler: async (
     ctx,
     {
       uid,
       text,
+      collectionId,
       collectionAddress,
       contractAdmin,
       metadataCode,
@@ -25,11 +28,13 @@ export const create = mutation({
       image,
       imageDescription,
       imageName,
+      zoraUrl,
     }
   ) => {
     return await ctx.db.insert('tokens', {
       uid,
       text,
+      collectionId,
       collectionAddress,
       contractAdmin,
       metadataCode,
@@ -37,16 +42,17 @@ export const create = mutation({
       image,
       imageDescription,
       imageName,
+      zoraUrl,
     });
   },
 });
 
 export const getCollectionTokens = query({
-  args: { collectionAddress: v.string() },
-  handler: async (ctx, { collectionAddress }) => {
+  args: { id: v.id('collections') },
+  handler: async (ctx, { id }) => {
     return await ctx.db
       .query('tokens')
-      .filter((q) => q.eq(q.field('collectionAddress'), collectionAddress))
+      .filter((q) => q.eq(q.field('collectionId'), id))
       .collect();
   },
 });
@@ -93,6 +99,7 @@ export const updateToken = mutation({
     image: v.optional(v.string()),
     imageName: v.optional(v.string()),
     imageDescription: v.optional(v.string()),
+    zoraUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {
@@ -103,6 +110,7 @@ export const updateToken = mutation({
       image,
       imageName,
       imageDescription,
+      zoraUrl,
     } = args;
     await ctx.db.patch(id, {
       text,
@@ -111,6 +119,7 @@ export const updateToken = mutation({
       image,
       imageName,
       imageDescription,
+      zoraUrl,
     });
   },
 });

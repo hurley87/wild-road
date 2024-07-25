@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Icons } from '../icons';
 import { toast } from '../ui/use-toast';
@@ -19,14 +19,12 @@ import { Input } from '../ui/input';
 import createPremint from '@/lib/premint';
 import { IRYS_URL } from '@/constants/common';
 import { useContractAdmin } from '@/hooks/useContractAdmin';
+import { Id } from '@/convex/_generated/dataModel';
 
-function CreateImageToken({
-  contractName,
-  contractURI,
-}: {
-  contractName: string;
-  contractURI: string;
-}) {
+function CreateImageToken({ id }: { id: Id<'collections'> }) {
+  const collection = useQuery(api.collections.getCollectionById, {
+    id,
+  });
   const { contractAdmin, walletClient } = useContractAdmin();
   const createToken = useMutation(api.tokens.create);
   const [imageName, setImageName] = useState('');
@@ -34,6 +32,8 @@ function CreateImageToken({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [openCreateImage, setOpenCreateImage] = useState(false);
   const [isUpdatingToken, setIsUpdatingToken] = useState(false);
+  const contractName = collection?.contractName;
+  const contractURI = collection?.contractURI;
 
   const addImageToken = async () => {
     setIsUpdatingToken(true);
@@ -90,6 +90,7 @@ function CreateImageToken({
     await createToken({
       uid,
       text: '',
+      collectionId: id,
       collectionAddress,
       contractAdmin,
       metadataCode,
@@ -114,7 +115,7 @@ function CreateImageToken({
   return (
     <Dialog open={openCreateImage} onOpenChange={setOpenCreateImage}>
       <DialogTrigger>
-        <Button type="button" size="icon">
+        <Button type="button" size="icon" variant="outline">
           <Icons.media className="w-4 h-4" />
         </Button>
       </DialogTrigger>
