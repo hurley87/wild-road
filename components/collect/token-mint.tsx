@@ -34,9 +34,7 @@ export function TokenMint({
 }) {
   const { user, login } = usePrivy();
   const { wallets } = useWallets();
-  console.log('user', user);
   const minterAccount = user?.wallet?.address as `0x${string}`;
-  console.log('minterAccount', minterAccount);
   const wallet = wallets.find((wallet) => wallet.address === minterAccount);
   const walletClient = useWalletClient({ wallet });
   const [quantityToMint, setQuantityToMint] = useState(1);
@@ -81,9 +79,15 @@ export function TokenMint({
     try {
       const { parameters } = await collectorClient.mint(mintParams);
 
+      console.log('parameters', parameters);
+
       const client = (await walletClient) as any;
 
+      console.log('client', client);
+
       const hash = await client.writeContract(parameters);
+
+      console.log('hash', hash);
 
       await create({
         uid,
