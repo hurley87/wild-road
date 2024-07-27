@@ -34,7 +34,9 @@ export function TokenMint({
 }) {
   const { user, login } = usePrivy();
   const { wallets } = useWallets();
+  console.log('user', user);
   const minterAccount = user?.wallet?.address as `0x${string}`;
+  console.log('minterAccount', minterAccount);
   const wallet = wallets.find((wallet) => wallet.address === minterAccount);
   const walletClient = useWalletClient({ wallet });
   const [quantityToMint, setQuantityToMint] = useState(1);
@@ -63,7 +65,7 @@ export function TokenMint({
     } as any;
 
     if (token?.zoraUrl) {
-      const mintReferral = process.env.NEXT_PUBLIC_MINT_REFERRAL;
+      const mintReferral = process.env.NEXT_PUBLIC_REFERRAL;
       mintParams = {
         tokenContract,
         mintType: '1155',
@@ -73,6 +75,8 @@ export function TokenMint({
         quantityToMint,
       };
     }
+
+    console.log('mintParams', mintParams);
 
     try {
       const { parameters } = await collectorClient.mint(mintParams);
