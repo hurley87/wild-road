@@ -43,7 +43,7 @@ export const getCollection = query({
   },
 });
 
-export const getAdminCollections = query({
+export const getCollections = query({
   args: { contractAdmin: v.string() },
   handler: async (ctx, { contractAdmin }) => {
     return await ctx.db

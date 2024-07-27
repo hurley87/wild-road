@@ -8,10 +8,11 @@ export const create = mutation({
     mintComment: v.string(),
     minterAccount: v.string(),
     quantityToMint: v.number(),
+    tokenId: v.id('tokens'),
   },
   handler: async (
     ctx,
-    { uid, tokenContract, mintComment, minterAccount, quantityToMint }
+    { uid, tokenContract, mintComment, minterAccount, quantityToMint, tokenId }
   ) => {
     return await ctx.db.insert('mints', {
       uid,
@@ -19,6 +20,7 @@ export const create = mutation({
       mintComment,
       minterAccount,
       quantityToMint,
+      tokenId,
     });
   },
 });
@@ -34,6 +36,16 @@ export const getCollectionTokens = query({
           q.gte(q.field('uid'), uid)
         )
       )
+      .collect();
+  },
+});
+
+export const getIdeas = query({
+  args: { minterAccount: v.string() },
+  handler: async (ctx, { minterAccount }) => {
+    return await ctx.db
+      .query('mints')
+      .filter((q) => q.eq(q.field('minterAccount'), minterAccount))
       .collect();
   },
 });

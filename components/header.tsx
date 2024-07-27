@@ -48,12 +48,17 @@ export default function Header() {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
+                <Link className="cursor-pointer" href={`/profile/${address}`}>
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link
                   className="cursor-pointer"
                   target="_blank"
                   href="https://zora.co/manage"
                 >
-                  Zora Rewards
+                  Rewards
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

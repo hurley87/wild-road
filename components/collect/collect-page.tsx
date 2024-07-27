@@ -23,6 +23,7 @@ export default function CollectPage({
   const collection = useQuery(api.collections.getCollection, {
     collectionAddress,
   });
+
   const id = collection?._id as Id<'collections'>;
   const tokens = useQuery(api.tokens.getCollectionTokens, {
     id,
@@ -38,10 +39,7 @@ export default function CollectPage({
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6 pb-10">
       <div className="text-4xl font-bold">{collection?.contractName}</div>
-      <Link
-        target="_blank"
-        href={`https://warpcast.com/${collection.username}`}
-      >
+      <Link target="_blank" href={`/profile/${collection?.contractAdmin}`}>
         <div className="flex items-center space-x-4 px-1">
           <Avatar>
             <AvatarImage src={collection.pfp} alt="Image" />

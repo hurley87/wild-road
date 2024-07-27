@@ -75,20 +75,12 @@ export function TokenMint({
       };
     }
 
-    console.log('mintParams', mintParams);
-
     try {
       const { parameters } = await collectorClient.mint(mintParams);
 
-      console.log('parameters', parameters);
-
       const client = (await walletClient) as any;
 
-      console.log('client', client);
-
       const hash = await client.writeContract(parameters);
-
-      console.log('hash', hash);
 
       await create({
         uid,
@@ -96,6 +88,7 @@ export function TokenMint({
         mintComment,
         minterAccount,
         quantityToMint,
+        tokenId,
       });
 
       toast({
@@ -111,8 +104,7 @@ export function TokenMint({
       setIsMinting(false);
       setMintComment('');
       setQuantityToMint(1);
-    } catch (e) {
-      console.log('error', e);
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to mint.',
