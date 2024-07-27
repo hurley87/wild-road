@@ -71,6 +71,7 @@ export function TokenMint({
         mintReferral,
         mintComment,
         quantityToMint,
+        minterAccount,
       };
     }
 
