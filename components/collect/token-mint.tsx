@@ -53,15 +53,29 @@ export function TokenMint({
   const handleMint = async () => {
     setIsMinting(true);
 
-    try {
-      const { parameters } = await collectorClient.mint({
+    let mintParams = {
+      tokenContract,
+      mintType: 'premint',
+      uid,
+      quantityToMint,
+      mintComment,
+      minterAccount,
+    } as any;
+
+    if (token?.zoraUrl) {
+      const mintReferral = process.env.NEXT_PUBLIC_MINT_REFERRAL;
+      mintParams = {
         tokenContract,
-        mintType: 'premint',
-        uid,
-        quantityToMint,
+        mintType: '1155',
+        tokenId: uid,
+        mintReferral,
         mintComment,
-        minterAccount,
-      });
+        quantityToMint,
+      };
+    }
+
+    try {
+      const { parameters } = await collectorClient.mint(mintParams);
 
       const client = (await walletClient) as any;
 
@@ -88,7 +102,8 @@ export function TokenMint({
       setIsMinting(false);
       setMintComment('');
       setQuantityToMint(1);
-    } catch {
+    } catch (e) {
+      console.log('error', e);
       toast({
         title: 'Error',
         description: 'Failed to mint.',
