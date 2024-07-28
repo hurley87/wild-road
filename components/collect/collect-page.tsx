@@ -17,7 +17,7 @@ export default function CollectPage({
   collectionAddress: `0x${string}`;
 }) {
   const searchParams = useSearchParams();
-  const uid = searchParams.get('uid');
+  const order = searchParams.get('t');
   const { user } = usePrivy();
   const address = user?.wallet?.address as `0x${string}`;
   const collection = useQuery(api.collections.getCollection, {
@@ -35,8 +35,6 @@ export default function CollectPage({
   const [firstToken, ...contentTokens] = tokens || [];
   const contractAdmin = collection?.contractAdmin;
   const isAdmin = address === contractAdmin;
-
-  console.log('tokens', tokens);
 
   return (
     <div className="max-w-3xl w-full mx-auto flex flex-col gap-6 pb-10">
@@ -60,7 +58,7 @@ export default function CollectPage({
       <div className="px-1">
         <div className="border border-y border-x-0 flex justify-between py-1">
           {firstToken && (
-            <TokenMint showMint={uid === '1'} tokenId={firstToken._id}>
+            <TokenMint showMint={order === '1'} tokenId={firstToken._id}>
               <Icons.chat className="w-4 h-4" />
             </TokenMint>
           )}
@@ -85,7 +83,7 @@ export default function CollectPage({
           <TokenMint
             key={token._id}
             tokenId={token._id}
-            showMint={token.uid.toString() === uid}
+            showMint={token.order.toString() === order}
           >
             {token.image !== '' ? (
               <img

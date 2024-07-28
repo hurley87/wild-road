@@ -31,6 +31,11 @@ export const create = mutation({
       zoraUrl,
     }
   ) => {
+    const tokens = await ctx.db
+      .query('tokens')
+      .filter((q) => q.eq(q.field('collectionId'), collectionId))
+      .collect();
+    const order = tokens ? tokens.length + 1 : 0;
     return await ctx.db.insert('tokens', {
       uid,
       text,
@@ -43,6 +48,7 @@ export const create = mutation({
       imageDescription,
       imageName,
       zoraUrl,
+      order,
     });
   },
 });
@@ -65,6 +71,22 @@ export const getToken = query({
       .filter((q) =>
         q.and(
           q.eq(q.field('uid'), uid),
+          q.eq(q.field('collectionAddress'), collectionAddress)
+        )
+      )
+      .collect();
+    return token[0];
+  },
+});
+
+export const getTokenByOrder = query({
+  args: { order: v.number(), collectionAddress: v.string() },
+  handler: async (ctx, { order, collectionAddress }) => {
+    const token = await ctx.db
+      .query('tokens')
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('order'), order),
           q.eq(q.field('collectionAddress'), collectionAddress)
         )
       )

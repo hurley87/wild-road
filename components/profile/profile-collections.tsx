@@ -1,12 +1,6 @@
 'use client';
-import { useMutation, useQuery } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import Link from 'next/link';
-import { Button } from '../ui/button';
-import { useState } from 'react';
-import { Id } from '@/convex/_generated/dataModel';
-import { toast } from '../ui/use-toast';
-import { Icons } from '../icons';
 import { ProfileCollection } from './profile-collection';
 
 export function ProfileCollections({

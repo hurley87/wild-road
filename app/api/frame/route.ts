@@ -11,14 +11,14 @@ import { BASE_URL, IRYS_URL } from '@/constants/common';
 
 const getAllowFramegear = () => process.env.NODE_ENV !== 'production';
 
-const getUid = (isNextButton: boolean, currentUid: number) =>
+const getNewOrder = (isNextButton: boolean, currentUid: number) =>
   isNextButton ? currentUid + 1 : currentUid - 1;
 
 const getButtons = (
-  uid: number,
+  order: number,
   url: string
 ): [FrameButtonMetadata, ...FrameButtonMetadata[]] => {
-  if (uid === 1) {
+  if (order === 1) {
     return [
       {
         action: 'link',
@@ -31,7 +31,7 @@ const getButtons = (
       {
         action: 'link',
         label: 'Mint',
-        target: url + `?uid=1`,
+        target: url + `?t=1`,
       },
     ];
   }
@@ -45,7 +45,7 @@ const getButtons = (
     {
       action: 'link',
       label: 'Mint',
-      target: url + `?uid=${uid}`,
+      target: url + `?t=${order}`,
     },
   ];
 };
@@ -69,27 +69,30 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     'collectionAddress'
   ) as string;
   let state = {
-    uid: 1,
+    order: 1,
   };
   try {
     state = JSON.parse(decodeURIComponent(message.state?.serialized));
   } catch {}
 
-  let uid = getUid(isNextButton, state.uid);
+  let order = getNewOrder(isNextButton, state.order);
 
-  let token = await fetchQuery(api.tokens.getToken, { collectionAddress, uid });
+  let token = await fetchQuery(api.tokens.getTokenByOrder, {
+    collectionAddress,
+    order,
+  });
 
   if (!token) {
-    token = await fetchQuery(api.tokens.getToken, {
+    token = await fetchQuery(api.tokens.getTokenByOrder, {
       collectionAddress,
-      uid: 1,
+      order: 1,
     });
-    uid = 1;
+    order = 1;
   }
 
   const src = `${IRYS_URL}${token.imageCode}`;
   const url = `${BASE_URL}/collect/${collectionAddress}`;
-  const buttons = getButtons(uid, url);
+  const buttons = getButtons(order, url);
 
   return new NextResponse(
     getFrameHtmlResponse({
@@ -100,7 +103,7 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
       },
       postUrl: `${BASE_URL}/api/frame?collectionAddress=${collectionAddress}`,
       state: {
-        uid,
+        order,
       },
     })
   );

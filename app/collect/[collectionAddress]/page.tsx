@@ -15,13 +15,13 @@ export default async function Collect({ params }: CollectPageProps) {
 
 export async function generateMetadata({ params }: CollectPageProps) {
   const collectionAddress = params.collectionAddress as `0x${string}`;
-  const uid = 1;
+  const order = 1;
   const collection = await fetchQuery(api.collections.getCollection, {
     collectionAddress,
   });
-  const token = await fetchQuery(api.tokens.getToken, {
+  const token = await fetchQuery(api.tokens.getTokenByOrder, {
     collectionAddress,
-    uid,
+    order: 1,
   });
   const title = collection.contractName;
   const description = `written by ${collection.username} on ${new Date(
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: CollectPageProps) {
       {
         action: 'mint',
         label: 'Mint',
-        target: `${url}?uid=${uid}`,
+        target: `${url}?t=${order}`,
       },
     ],
     image: {
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: CollectPageProps) {
     },
     postUrl: `${BASE_URL}/api/frame?collectionAddress=${collectionAddress}`,
     state: {
-      uid,
+      order,
     },
   });
 
