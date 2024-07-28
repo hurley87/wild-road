@@ -30,8 +30,8 @@ export default function ProfilePage({
       </div>
       <Tabs defaultValue="ideas" className="w-full">
         <TabsList>
-          <TabsTrigger value="ideas">Ideas</TabsTrigger>
-          <TabsTrigger value="collections">Collections</TabsTrigger>
+          <TabsTrigger value="ideas">Curations</TabsTrigger>
+          <TabsTrigger value="collections">Creations</TabsTrigger>
         </TabsList>
         <TabsContent value="ideas">
           <ProfileIdeas walletAddress={walletAddress} />

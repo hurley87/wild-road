@@ -1,7 +1,13 @@
 'use client';
-import { useQuery } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Link from 'next/link';
+import { Button } from '../ui/button';
+import { useState } from 'react';
+import { Id } from '@/convex/_generated/dataModel';
+import { toast } from '../ui/use-toast';
+import { Icons } from '../icons';
+import { ProfileCollection } from './profile-collection';
 
 export function ProfileCollections({
   walletAddress,
@@ -17,17 +23,11 @@ export function ProfileCollections({
   return (
     <div className="w-full flex flex-col gap-6 py-6">
       {collections.map((collection) => (
-        <Link
-          href={`/create/${collection.collectionAddress}`}
-          className="underline text-4xl font-bold"
-          key={collection._id}
-        >
-          {collection.contractName}
-        </Link>
+        <ProfileCollection key={collection._id} id={collection._id} />
       ))}
       {collections.length === 0 && (
         <div className="text-muted-foreground text-lg font-bold">
-          No collections yet
+          You haven't created any ideas yet
         </div>
       )}
     </div>

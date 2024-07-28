@@ -256,7 +256,7 @@ function UpdateToken({ tokenId }: { tokenId: Id<'tokens'> }) {
                   <Button
                     disabled={
                       isUpdatingToken ||
-                      zoraUrl.length === 0 ||
+                      zoraUrl?.length === 0 ||
                       zoraUrl === token?.zoraUrl
                     }
                     onClick={updateZoraToken}

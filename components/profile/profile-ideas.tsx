@@ -21,7 +21,7 @@ export function ProfileIdeas({
       ))}
       {ideas.length === 0 && (
         <div className="text-muted-foreground text-lg font-bold">
-          No ideas yet
+          You haven't collected any ideas yet
         </div>
       )}
     </div>

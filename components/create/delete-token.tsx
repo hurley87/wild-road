@@ -20,14 +20,14 @@ function DeleteToken({ tokenId }: { tokenId: Id<'tokens'> }) {
   const collectionAddress = token?.collectionAddress;
   const tokenUid = token?.uid;
 
-  const handleDelete = async (id: Id<'tokens'>, uid: number) => {
+  const handleDelete = async () => {
     setIsDeletingToken(true);
 
     try {
       if (!token.zoraUrl) {
         const { signAndSubmit } = await creatorClient.deletePremint({
           collection: collectionAddress,
-          uid,
+          uid: tokenUid,
         });
 
         const client = (await walletClient) as any;
@@ -39,7 +39,7 @@ function DeleteToken({ tokenId }: { tokenId: Id<'tokens'> }) {
       }
 
       await deleteToken({
-        id,
+        id: tokenId,
       });
 
       toast({
@@ -62,7 +62,7 @@ function DeleteToken({ tokenId }: { tokenId: Id<'tokens'> }) {
       variant="ghost"
       size="icon"
       className="border rounded-md p-1"
-      onClick={() => handleDelete(tokenId, tokenUid)}
+      onClick={handleDelete}
     >
       {isDeletingToken ? (
         <Icons.spinner className="h-4 w-4 animate-spin" />

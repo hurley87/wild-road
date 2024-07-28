@@ -59,3 +59,10 @@ export const getCollectionById = query({
     return await ctx.db.get(id);
   },
 });
+
+export const deleteCollection = mutation({
+  args: { id: v.id('collections') },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.delete(id);
+  },
+});
